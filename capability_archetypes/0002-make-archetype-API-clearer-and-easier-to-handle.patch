@@ -1,0 +1,50 @@
+From 3dac8dd3dd399e55f284f41065aee31c7936bb01 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 31 Mar 2014 11:41:25 +0200
+Subject: [PATCH 2/8] make archetype API clearer and easier to handle
+
+---
+ lib/archetype.rb | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/lib/archetype.rb b/lib/archetype.rb
+index 6692fa0..6d397c7 100644
+--- a/lib/archetype.rb
++++ b/lib/archetype.rb
+@@ -3,9 +3,9 @@ class Archetype
+ 
+   attr_accessor :id, :options
+ 
+-  def initialize(id, options)
++  def initialize(id, options=nil)
+     @id = id
+-    @options = options
++    @options = options || {}
+   end
+ 
+   def attributes
+@@ -39,6 +39,10 @@ class Archetype
+     @archetypes.values
+   end
+ 
++  def self.get_archetype(name)
++    @archetypes[name]
++  end
++
+   def self.register_capability(capability, name)
+     @capabilities ||= {}
+     @capabilities[capability] = [] unless @capabilities.has_key? capability
+@@ -49,8 +53,8 @@ class Archetype
+     @archetypes ||= {}
+     archetype = options["archetype"] || Archetype.new(name, options)
+     @archetypes[name] = archetype
+-    if options.has_key? :capabilties
+-      options[:capabilties].each do |cap|
++    if archetype.options.has_key? :capabilties
++      archetype.options[:capabilties].each do |cap|
+         register_capability(cap, name)
+       end
+     end
+-- 
+1.8.3.4 (Apple Git-47)
+

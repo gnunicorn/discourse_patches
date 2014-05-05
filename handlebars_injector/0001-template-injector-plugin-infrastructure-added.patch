@@ -1,0 +1,268 @@
+From 47b4ef3fe4f9df6bf8b527587d8b89c9aee4fa85 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Fri, 11 Apr 2014 15:05:03 +0200
+Subject: [PATCH 1/3] template injector plugin infrastructure added
+
+---
+ .../javascripts/ember-handlebars-injector.js       | 121 +++++++++++++++++++++
+ app/assets/javascripts/main_include.js             |   1 +
+ app/assets/javascripts/template_injectors.js.erb   |   3 +
+ app/assets/javascripts/vendor.js                   |   2 +
+ lib/discourse_plugin_registry.rb                   |   9 ++
+ lib/plugin/instance.rb                             |   2 +
+ spec/components/discourse_plugin_registry_spec.rb  |   7 ++
+ spec/components/plugin/instance_spec.rb            |  12 ++
+ 8 files changed, 157 insertions(+)
+ create mode 100644 app/assets/javascripts/ember-handlebars-injector.js
+ create mode 100644 app/assets/javascripts/template_injectors.js.erb
+
+diff --git a/app/assets/javascripts/ember-handlebars-injector.js b/app/assets/javascripts/ember-handlebars-injector.js
+new file mode 100644
+index 0000000..a62643b
+--- /dev/null
++++ b/app/assets/javascripts/ember-handlebars-injector.js
+@@ -0,0 +1,121 @@
++/* jshint undef: true, unused: true, debug:true */
++/* globals console:false, md5:false */
++(function() {
++    var patchers = {};
++    var finder = '';
++    var DEBUG = false;
++    var re = new RegExp("(.*)\\[(\\d+)\\]$", "g");
++
++    function _find_in_tree(parts, statements) {
++        var query = parts.shift(),
++            count = 0,
++            antiMatches = {"if-else": "if", "each-else": "each"},
++            inverse = false,
++            found;
++        if (query.match(re)){
++            var splitted = query.split(re);
++            query = splitted[1];
++            count = parseInt(splitted[2]);
++        }
++
++        if (query.length === 0) { // can be the case after split
++            found = [statements[count], statements, count];
++        } else {
++            if (antiMatches[query]){
++                query = antiMatches[query];
++                inverse = true;
++            }
++            for (var idx=0; idx < statements.length; idx ++) {
++                var entry = statements[idx];
++                if (entry.mustache && entry.mustache.id.string === query) {
++                    if (inverse && !entry.inverse)
++                        continue;
++                    if (count === 0){
++                        found = [entry, statements, idx];
++                        break;
++                    }
++                    count -= 1;
++                }
++            }
++        }
++
++        if (found && parts.length){
++            return _find_in_tree(parts, inverse ? found[0].inverse.statements : found[0].program.statements);
++        }
++        if (!found && DEBUG)
++            throw "NOPE!";
++        if (DEBUG)
++            debugger;
++        return found;
++    }
++
++    function _find_ast_part(query, statements){
++        if (typeof (query) === "string") query = query.split(" ");
++        return _find_in_tree(query, statements);
++    }
++
++
++    var originalParse = Handlebars.parse;
++    Handlebars.parse = function(string){
++        var ast = originalParse(string);
++        var hash = md5(string);
++        if (DEBUG && finder.length && string.indexOf(finder) !== -1)
++                console.log("Finder found in " + hash + "\n", string);
++        if (patchers[hash]){
++            for(var i=0; i < patchers[hash].length; i++ ) {
++                try {
++                    var res = patchers[hash][i](ast, hash, string);
++                    if (res){
++                        ast = res;
++                    }
++                } catch (e) {
++                    if (window.console) console.warn(e);
++                }
++            }
++        }
++        return ast;
++    };
++
++    var Patcher = function(){};
++    Patcher.prototype = {
++        originalParse: originalParse,
++        addGeneralPatcher: function(hash, cb){
++            if (!patchers[hash]) patchers[hash] = [cb];
++            else patchers[hash].push(cb);
++        },
++        setFinder: function(exp){
++            finder = exp;
++        },
++        setDebug: function(val){
++            DEBUG = val;
++        },
++        insertAt: function(ast, pos, tmpl, options){
++            var shift = options.shift || 0;
++            if (typeof (tmpl) === "string") {
++                tmpl = Handlebars.parse(tmpl);
++            }
++            var target_statements = ast.statements;
++            if (typeof(pos) === "string") {
++                var target = _find_ast_part(pos, target_statements);
++                if (target) {
++                    target_statements = target[1];
++                    pos = target[2] + 1 + shift;
++                } else {
++                    throw "Sorry can't find " + pos + "in" + ast;
++                }
++            }
++            for (var idx=0; idx < tmpl.statements.length; idx++){
++                target_statements.insertAt(pos + idx, tmpl.statements[idx]);
++            }
++            if (options.replace){
++                target_statements.splice(pos-1, 1);
++            }
++        },
++        replaceWith: function(ast, pos, tmpl){
++            return Ember.TemplatePatcher.insertAt(ast, pos, tmpl, {replace: true});
++        }
++    };
++    if (window.Ember){
++        Ember.TemplatePatcher = new Patcher();
++    }
++})();
+\ No newline at end of file
+diff --git a/app/assets/javascripts/main_include.js b/app/assets/javascripts/main_include.js
+index 273d9b8..dc9c591 100644
+--- a/app/assets/javascripts/main_include.js
++++ b/app/assets/javascripts/main_include.js
+@@ -34,6 +34,7 @@
+ //= require_tree ./discourse/components
+ //= require_tree ./discourse/views
+ //= require_tree ./discourse/helpers
++//= require ./template_injectors
+ //= require_tree ./discourse/templates
+ //= require_tree ./discourse/routes
+ //= require_tree ./discourse/initializers
+diff --git a/app/assets/javascripts/template_injectors.js.erb b/app/assets/javascripts/template_injectors.js.erb
+new file mode 100644
+index 0000000..f0e916f
+--- /dev/null
++++ b/app/assets/javascripts/template_injectors.js.erb
+@@ -0,0 +1,3 @@
++<%
++DiscoursePluginRegistry.template_injectors.each { |ti| require_asset(ti) }
++%>
+diff --git a/app/assets/javascripts/vendor.js b/app/assets/javascripts/vendor.js
+index 4a8d64d..fadf199 100644
+--- a/app/assets/javascripts/vendor.js
++++ b/app/assets/javascripts/vendor.js
+@@ -38,3 +38,5 @@
+ //= require lock-on.js
+ //= require ember-cloaking
+ //= require break_string
++
++//= require ember-handlebars-injector.js
+diff --git a/lib/discourse_plugin_registry.rb b/lib/discourse_plugin_registry.rb
+index 1a32e47..652821c 100644
+--- a/lib/discourse_plugin_registry.rb
++++ b/lib/discourse_plugin_registry.rb
+@@ -42,6 +42,10 @@ class DiscoursePluginRegistry
+       @sass_variables ||= Set.new
+     end
+ 
++    def template_injectors
++      @template_injectors ||= Set.new
++    end
++
+     def handlebars
+       @handlebars ||= Set.new
+     end
+@@ -89,6 +93,10 @@ class DiscoursePluginRegistry
+     self.class.handlebars
+   end
+ 
++  def template_injectors
++    self.class.template_injectors
++  end
++
+   def self.clear
+     self.javascripts = nil
+     self.server_side_javascripts = nil
+@@ -97,6 +105,7 @@ class DiscoursePluginRegistry
+     self.desktop_stylesheets = nil
+     self.sass_variables = nil
+     self.handlebars = nil
++    self.template_injectors = nil
+   end
+ 
+   def self.setup(plugin_class)
+diff --git a/lib/plugin/instance.rb b/lib/plugin/instance.rb
+index 297726f..fe26bf2 100644
+--- a/lib/plugin/instance.rb
++++ b/lib/plugin/instance.rb
+@@ -215,6 +215,8 @@ class Plugin::Instance
+       if asset =~ /\.js$|\.js\.erb$/
+         if opts == :admin
+           DiscoursePluginRegistry.admin_javascripts << asset
++        elsif opts == :template_injector
++          DiscoursePluginRegistry.template_injectors << asset
+         else
+           if opts == :server_side
+             DiscoursePluginRegistry.server_side_javascripts << asset
+diff --git a/spec/components/discourse_plugin_registry_spec.rb b/spec/components/discourse_plugin_registry_spec.rb
+index 650d864..5eafc78 100644
+--- a/spec/components/discourse_plugin_registry_spec.rb
++++ b/spec/components/discourse_plugin_registry_spec.rb
+@@ -29,6 +29,13 @@ describe DiscoursePluginRegistry do
+     end
+   end
+ 
++  context '#template_injectors' do
++    it 'defaults to an empty Set' do
++      registry.template_injectors = nil
++      registry.template_injectors.should == Set.new
++    end
++  end
++
+   context '#server_side_javascripts' do
+     it 'defaults to an empty Set' do
+       registry.server_side_javascripts = nil
+diff --git a/spec/components/plugin/instance_spec.rb b/spec/components/plugin/instance_spec.rb
+index c61ff9c..cd97beb 100644
+--- a/spec/components/plugin/instance_spec.rb
++++ b/spec/components/plugin/instance_spec.rb
+@@ -91,6 +91,18 @@ describe Plugin::Instance do
+       DiscoursePluginRegistry.server_side_javascripts.count.should == 0
+     end
+ 
++    it "registers template injector properly" do
++      plugin = Plugin::Instance.new nil, "/tmp/test.rb"
++      plugin.register_asset("inject_tmpls.js", :template_injector)
++
++      plugin.send :register_assets!
++
++      DiscoursePluginRegistry.template_injectors.count.should == 1
++      DiscoursePluginRegistry.admin_javascripts.count.should == 0
++      DiscoursePluginRegistry.javascripts.count.should == 0
++      DiscoursePluginRegistry.server_side_javascripts.count.should == 0
++    end
++
+     it "registers server side javascript properly" do
+       plugin = Plugin::Instance.new nil, "/tmp/test.rb"
+       plugin.register_asset("my_admin.js", :server_side)
+-- 
+1.8.3.4 (Apple Git-47)
+

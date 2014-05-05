@@ -1,0 +1,27 @@
+From 15c799e081d17fc326d755934bf83021e44bec69 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Thu, 1 May 2014 15:25:04 +0200
+Subject: [PATCH 8/8] topic_creation always needs to be implemented
+
+---
+ lib/archetype.rb | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lib/archetype.rb b/lib/archetype.rb
+index 968ccf3..6e7b40d 100644
+--- a/lib/archetype.rb
++++ b/lib/archetype.rb
+@@ -61,6 +61,10 @@ class Archetype
+     end
+   end
+ 
++  def handle_topic_creation(topic_creator)
++    self
++  end
++
+   # By default we have a regular archetype
+   register 'regular', capabilities: [:searchable, :shown_publicly, :linkable]
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

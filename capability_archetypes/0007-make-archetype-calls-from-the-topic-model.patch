@@ -1,0 +1,28 @@
+From edad7b21b81afd9d112d5d3cec8574e22d996f81 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 31 Mar 2014 16:56:06 +0200
+Subject: [PATCH 7/8] make archetype calls from the topic model
+
+---
+ app/models/topic.rb | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/app/models/topic.rb b/app/models/topic.rb
+index 53abf35..dd29e55 100644
+--- a/app/models/topic.rb
++++ b/app/models/topic.rb
+@@ -26,6 +26,11 @@ class Topic < ActiveRecord::Base
+     2**31 - 1
+   end
+ 
++  def archetype_handle(func, *args, **kwargs)
++    @archetypeObj ||= Archetype.get_archetype(self.archetype)
++    @archetypeObj.__send__ func, *args, **kwargs
++  end
++
+   def featured_users
+     @featured_users ||= TopicFeaturedUsers.new(self)
+   end
+-- 
+1.8.3.4 (Apple Git-47)
+

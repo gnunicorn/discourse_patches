@@ -1,0 +1,25 @@
+From 1a4071631d7a3a3b587663ecb0ca5a2036cc50f3 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 31 Mar 2014 12:29:15 +0200
+Subject: [PATCH 4/8] missed one
+
+---
+ app/models/post.rb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app/models/post.rb b/app/models/post.rb
+index 0f0e0c8..4aa7b61 100644
+--- a/app/models/post.rb
++++ b/app/models/post.rb
+@@ -48,7 +48,7 @@ class Post < ActiveRecord::Base
+   scope :by_post_number, -> { order('post_number ASC') }
+   scope :with_user, -> { includes(:user) }
+   scope :created_since, lambda { |time_ago| where('posts.created_at > ?', time_ago) }
+-  scope :public_posts, -> { joins(:topic).where('topics.archetype <> ?', Archetype.private_message) }
++  scope :public_posts, -> { joins(:topic).where('topics.archetype in (?)', Archetype.capable(:shown_publicly)) }
+   scope :private_posts, -> { joins(:topic).where('topics.archetype = ?', Archetype.private_message) }
+   scope :with_topic_subtype, ->(subtype) { joins(:topic).where('topics.subtype = ?', subtype) }
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

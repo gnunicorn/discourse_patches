@@ -1,0 +1,34 @@
+From 65cd83dad86d09be734eabf3200b23daa8db1c0f Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Thu, 1 May 2014 15:25:53 +0200
+Subject: [PATCH 3/3] more robust option handling
+
+---
+ app/assets/javascripts/ember-handlebars-injector.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/app/assets/javascripts/ember-handlebars-injector.js b/app/assets/javascripts/ember-handlebars-injector.js
+index 405c2c0..5a76d6a 100644
+--- a/app/assets/javascripts/ember-handlebars-injector.js
++++ b/app/assets/javascripts/ember-handlebars-injector.js
+@@ -92,7 +92,7 @@
+             DEBUG = val;
+         },
+         insertAt: function(ast, pos, tmpl, options){
+-            var shift = options.shift || 0;
++            var shift = (options && options.shift) || 0;
+             if (typeof (tmpl) === "string") {
+                 tmpl = Handlebars.parse(tmpl);
+             }
+@@ -109,7 +109,7 @@
+             for (var idx=0; idx < tmpl.statements.length; idx++){
+                 target_statements.insertAt(pos + idx, tmpl.statements[idx]);
+             }
+-            if (options.replace){
++            if (options && options.replace){
+                 target_statements.splice(pos-1, 1);
+             }
+         },
+-- 
+1.8.3.4 (Apple Git-47)
+

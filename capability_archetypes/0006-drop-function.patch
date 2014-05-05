@@ -1,0 +1,26 @@
+From fa2dde0f023c72b7c3bc986471eb2f48bde9a82a Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 31 Mar 2014 16:55:49 +0200
+Subject: [PATCH 6/8] drop function
+
+---
+ lib/archetype.rb | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/lib/archetype.rb b/lib/archetype.rb
+index a104f00..968ccf3 100644
+--- a/lib/archetype.rb
++++ b/lib/archetype.rb
+@@ -13,9 +13,6 @@ class Archetype
+      'options' => @options}
+   end
+ 
+-  def handle_topic_creation(topic_creator)
+-  end
+-
+   def self.default
+     'regular'
+   end
+-- 
+1.8.3.4 (Apple Git-47)
+
