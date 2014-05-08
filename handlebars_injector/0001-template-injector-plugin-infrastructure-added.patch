@@ -1,4 +1,4 @@
-From 47b4ef3fe4f9df6bf8b527587d8b89c9aee4fa85 Mon Sep 17 00:00:00 2001
+From caa39ce32ee0ca7047634929e86f07dea9489ce1 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
 Subject: [PATCH 1/3] template injector plugin infrastructure added

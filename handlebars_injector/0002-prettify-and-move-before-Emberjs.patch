@@ -1,4 +1,4 @@
-From 80b21f0cefe517caeed869aeb627654e48db7967 Mon Sep 17 00:00:00 2001
+From dd0a1437330c4be93f9cc2e8ba77752711298625 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Thu, 1 May 2014 14:25:20 +0200
 Subject: [PATCH 2/3] prettify and move before Emberjs

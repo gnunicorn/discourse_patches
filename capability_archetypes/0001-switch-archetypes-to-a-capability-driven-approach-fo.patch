@@ -1,4 +1,4 @@
-From 3c82aa9a482d897510163884811138838bced391 Mon Sep 17 00:00:00 2001
+From 5fe9821539cfd0f18a6300d9238a713cf1b1a458 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 28 Mar 2014 17:47:19 +0100
 Subject: [PATCH 1/8] switch archetypes to a capability-driven approach for
@@ -16,7 +16,7 @@ Subject: [PATCH 1/8] switch archetypes to a capability-driven approach for
  8 files changed, 41 insertions(+), 17 deletions(-)
 
 diff --git a/app/models/group.rb b/app/models/group.rb
-index e5cd9dc..9116d33 100644
+index 6bd93a5..c2f02b2 100644
 --- a/app/models/group.rb
 +++ b/app/models/group.rb
 @@ -37,7 +37,7 @@ class Group < ActiveRecord::Base
@@ -42,7 +42,7 @@ index 84716f8..88d5f5a 100644
  
    def self.json_for(guardian)
 diff --git a/app/models/top_topic.rb b/app/models/top_topic.rb
-index 68882ea..15fa87e 100644
+index 352677a..c80e2c3 100644
 --- a/app/models/top_topic.rb
 +++ b/app/models/top_topic.rb
 @@ -34,13 +34,13 @@ class TopTopic < ActiveRecord::Base
@@ -79,25 +79,25 @@ index 68882ea..15fa87e 100644
  
    def self.update_posts_count_for(period)
 diff --git a/app/models/topic.rb b/app/models/topic.rb
-index 9360b98..53abf35 100644
+index 99fd3e1..0797f63 100644
 --- a/app/models/topic.rb
 +++ b/app/models/topic.rb
-@@ -115,7 +115,7 @@ class Topic < ActiveRecord::Base
-     where(archetype: Archetype.private_message)
-   }
+@@ -113,7 +113,7 @@ class Topic < ActiveRecord::Base
+   # Return private message topics
+   scope :private_messages, -> { where(archetype: Archetype.private_message) }
  
--  scope :listable_topics, lambda { where('topics.archetype <> ?', [Archetype.private_message]) }
-+  scope :listable_topics, lambda { where('topics.archetype IN (?)', Archetype.capable(:shown_publicly)) }
+-  scope :listable_topics, -> { where('topics.archetype <> ?', [Archetype.private_message]) }
++  scope :listable_topics, -> { where('topics.archetype IN (?)', Archetype.capable(:shown_publicly)) }
  
    scope :by_newest, -> { order('topics.created_at desc, topics.id desc') }
  
 diff --git a/app/models/topic_link.rb b/app/models/topic_link.rb
-index 08bd0bf..8b6dc7f 100644
+index cd8a106..3ed5c0f 100644
 --- a/app/models/topic_link.rb
 +++ b/app/models/topic_link.rb
 @@ -154,7 +154,9 @@ class TopicLink < ActiveRecord::Base
            if topic_id.present?
-             topic = Topic.where(id: topic_id).first
+             topic = Topic.find_by(id: topic_id)
  
 -            if topic && post.topic && post.topic.archetype != 'private_message' && topic.archetype != 'private_message'
 +            if topic && post.topic &&
@@ -130,10 +130,10 @@ index 7e51acd..319b269 100644
    end
  
 diff --git a/app/models/user_action.rb b/app/models/user_action.rb
-index fc66f18..ca1308f 100644
+index 0c19f8c..9b4d221 100644
 --- a/app/models/user_action.rb
 +++ b/app/models/user_action.rb
-@@ -285,7 +285,7 @@ SQL
+@@ -299,7 +299,7 @@ SQL
      end
  
      if !guardian.can_see_private_messages?(user_id) || ignore_private_messages

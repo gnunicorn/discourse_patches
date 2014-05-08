@@ -1,4 +1,4 @@
-From 65cd83dad86d09be734eabf3200b23daa8db1c0f Mon Sep 17 00:00:00 2001
+From 074d7554f4b4c89742ff4288b62900fc787197e8 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Thu, 1 May 2014 15:25:53 +0200
 Subject: [PATCH 3/3] more robust option handling

@@ -1,4 +1,4 @@
-From 692e88312d5c2651a8a9ace885561cb5f8b7e12e Mon Sep 17 00:00:00 2001
+From 90ade57228f0f15b3d03fb449c6c77e5102a2c73 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 11:41:51 +0200
 Subject: [PATCH 3/8] move PM archetype specifics into its archetype info
@@ -79,7 +79,7 @@ index 6d397c7..10fc266 100644
 +
 +Archetype.register("private_message", {archetype: PrivateMessageArchetype.new("private_message")})
 diff --git a/lib/topic_creator.rb b/lib/topic_creator.rb
-index 7356c8b..c241672 100644
+index b361bbc..9112050 100644
 --- a/lib/topic_creator.rb
 +++ b/lib/topic_creator.rb
 @@ -16,7 +16,7 @@ class TopicCreator
