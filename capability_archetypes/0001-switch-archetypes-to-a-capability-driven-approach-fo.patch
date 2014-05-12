@@ -1,4 +1,4 @@
-From 5fe9821539cfd0f18a6300d9238a713cf1b1a458 Mon Sep 17 00:00:00 2001
+From bc25fe43097db74d783bedb0d524b3d749c76506 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 28 Mar 2014 17:47:19 +0100
 Subject: [PATCH 1/8] switch archetypes to a capability-driven approach for
@@ -16,7 +16,7 @@ Subject: [PATCH 1/8] switch archetypes to a capability-driven approach for
  8 files changed, 41 insertions(+), 17 deletions(-)
 
 diff --git a/app/models/group.rb b/app/models/group.rb
-index 6bd93a5..c2f02b2 100644
+index 8b920e1..e290a15 100644
 --- a/app/models/group.rb
 +++ b/app/models/group.rb
 @@ -37,7 +37,7 @@ class Group < ActiveRecord::Base
@@ -79,10 +79,10 @@ index 352677a..c80e2c3 100644
  
    def self.update_posts_count_for(period)
 diff --git a/app/models/topic.rb b/app/models/topic.rb
-index 99fd3e1..0797f63 100644
+index 7afb405..e620d3f 100644
 --- a/app/models/topic.rb
 +++ b/app/models/topic.rb
-@@ -113,7 +113,7 @@ class Topic < ActiveRecord::Base
+@@ -116,7 +116,7 @@ class Topic < ActiveRecord::Base
    # Return private message topics
    scope :private_messages, -> { where(archetype: Archetype.private_message) }
  
@@ -92,10 +92,10 @@ index 99fd3e1..0797f63 100644
    scope :by_newest, -> { order('topics.created_at desc, topics.id desc') }
  
 diff --git a/app/models/topic_link.rb b/app/models/topic_link.rb
-index cd8a106..3ed5c0f 100644
+index 8745543..bff6767 100644
 --- a/app/models/topic_link.rb
 +++ b/app/models/topic_link.rb
-@@ -154,7 +154,9 @@ class TopicLink < ActiveRecord::Base
+@@ -156,7 +156,9 @@ class TopicLink < ActiveRecord::Base
            if topic_id.present?
              topic = Topic.find_by(id: topic_id)
  
@@ -130,10 +130,10 @@ index 7e51acd..319b269 100644
    end
  
 diff --git a/app/models/user_action.rb b/app/models/user_action.rb
-index 0c19f8c..9b4d221 100644
+index b52df90..4cfcbdf 100644
 --- a/app/models/user_action.rb
 +++ b/app/models/user_action.rb
-@@ -299,7 +299,7 @@ SQL
+@@ -300,7 +300,7 @@ SQL
      end
  
      if !guardian.can_see_private_messages?(user_id) || ignore_private_messages

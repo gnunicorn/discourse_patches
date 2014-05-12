@@ -1,4 +1,4 @@
-From 90ade57228f0f15b3d03fb449c6c77e5102a2c73 Mon Sep 17 00:00:00 2001
+From f90349a2854212487e3a7eeb858e15f263d7945d Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 11:41:51 +0200
 Subject: [PATCH 3/8] move PM archetype specifics into its archetype info

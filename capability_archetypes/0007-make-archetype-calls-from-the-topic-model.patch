@@ -1,4 +1,4 @@
-From be1565b89e47c42f0786038667b571f68a2a0aca Mon Sep 17 00:00:00 2001
+From 713eb45bf37de87630f1c3de22e22c873fbdaa28 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 16:56:06 +0200
 Subject: [PATCH 7/8] make archetype calls from the topic model
@@ -8,10 +8,10 @@ Subject: [PATCH 7/8] make archetype calls from the topic model
  1 file changed, 5 insertions(+)
 
 diff --git a/app/models/topic.rb b/app/models/topic.rb
-index 0797f63..b263b2a 100644
+index e620d3f..af0e561 100644
 --- a/app/models/topic.rb
 +++ b/app/models/topic.rb
-@@ -26,6 +26,11 @@ class Topic < ActiveRecord::Base
+@@ -28,6 +28,11 @@ class Topic < ActiveRecord::Base
      2**31 - 1
    end
  

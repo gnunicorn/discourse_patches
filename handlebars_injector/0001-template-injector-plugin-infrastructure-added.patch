@@ -1,27 +1,27 @@
-From caa39ce32ee0ca7047634929e86f07dea9489ce1 Mon Sep 17 00:00:00 2001
+From ae2ffd349967f72933187bc3393c1e21bd86238e Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
-Subject: [PATCH 1/3] template injector plugin infrastructure added
+Subject: [PATCH 1/2] template injector plugin infrastructure added
 
 ---
- .../javascripts/ember-handlebars-injector.js       | 121 +++++++++++++++++++++
+ .../javascripts/ember-handlebars-injector.js       | 120 +++++++++++++++++++++
  app/assets/javascripts/main_include.js             |   1 +
  app/assets/javascripts/template_injectors.js.erb   |   3 +
- app/assets/javascripts/vendor.js                   |   2 +
+ app/assets/javascripts/vendor.js                   |   1 +
  lib/discourse_plugin_registry.rb                   |   9 ++
  lib/plugin/instance.rb                             |   2 +
  spec/components/discourse_plugin_registry_spec.rb  |   7 ++
- spec/components/plugin/instance_spec.rb            |  12 ++
- 8 files changed, 157 insertions(+)
+ spec/components/plugin/instance_spec.rb            |  12 +++
+ 8 files changed, 155 insertions(+)
  create mode 100644 app/assets/javascripts/ember-handlebars-injector.js
  create mode 100644 app/assets/javascripts/template_injectors.js.erb
 
 diff --git a/app/assets/javascripts/ember-handlebars-injector.js b/app/assets/javascripts/ember-handlebars-injector.js
 new file mode 100644
-index 0000000..a62643b
+index 0000000..cdd2e2b
 --- /dev/null
 +++ b/app/assets/javascripts/ember-handlebars-injector.js
-@@ -0,0 +1,121 @@
+@@ -0,0 +1,120 @@
 +/* jshint undef: true, unused: true, debug:true */
 +/* globals console:false, md5:false */
 +(function() {
@@ -67,8 +67,6 @@ index 0000000..a62643b
 +            return _find_in_tree(parts, inverse ? found[0].inverse.statements : found[0].program.statements);
 +        }
 +        if (!found && DEBUG)
-+            throw "NOPE!";
-+        if (DEBUG)
 +            debugger;
 +        return found;
 +    }
@@ -80,32 +78,34 @@ index 0000000..a62643b
 +
 +
 +    var originalParse = Handlebars.parse;
-+    Handlebars.parse = function(string){
-+        var ast = originalParse(string);
-+        var hash = md5(string);
-+        if (DEBUG && finder.length && string.indexOf(finder) !== -1)
-+                console.log("Finder found in " + hash + "\n", string);
-+        if (patchers[hash]){
-+            for(var i=0; i < patchers[hash].length; i++ ) {
-+                try {
-+                    var res = patchers[hash][i](ast, hash, string);
-+                    if (res){
-+                        ast = res;
-+                    }
-+                } catch (e) {
-+                    if (window.console) console.warn(e);
-+                }
-+            }
-+        }
-+        return ast;
-+    };
-+
 +    var Patcher = function(){};
 +    Patcher.prototype = {
-+        originalParse: originalParse,
-+        addGeneralPatcher: function(hash, cb){
-+            if (!patchers[hash]) patchers[hash] = [cb];
-+            else patchers[hash].push(cb);
++        parse: function(string){
++            var ast = originalParse(string),
++                hash = md5(string);
++            if (DEBUG && finder.length && string.indexOf(finder) !== -1)
++                    console.log("Finder found in " + hash + "\n", string);
++            if (patchers[hash]){
++                for(var i=0; i < patchers[hash].length; i++ ) {
++                    try {
++                        var res = patchers[hash][i](ast, hash, string);
++                        if (res){
++                            ast = res;
++                        }
++                    } catch (e) {
++                        window.console && console.warn(e);
++                    }
++                }
++            }
++            return ast;
++        },
++        addGeneralPatcher: function(hashes, cb){
++            if (typeof hashes === "string") hashes = [hashes];
++            for (var i=0;i < hashes.length; i++) {
++                var hash = hashes[i];
++                if (!patchers[hash]) patchers[hash] = [cb];
++                else patchers[hash].push(cb);
++            }
 +        },
 +        setFinder: function(exp){
 +            finder = exp;
@@ -114,7 +114,7 @@ index 0000000..a62643b
 +            DEBUG = val;
 +        },
 +        insertAt: function(ast, pos, tmpl, options){
-+            var shift = options.shift || 0;
++            var shift = (options && options.shift) || 0;
 +            if (typeof (tmpl) === "string") {
 +                tmpl = Handlebars.parse(tmpl);
 +            }
@@ -131,17 +131,16 @@ index 0000000..a62643b
 +            for (var idx=0; idx < tmpl.statements.length; idx++){
 +                target_statements.insertAt(pos + idx, tmpl.statements[idx]);
 +            }
-+            if (options.replace){
++            if (options && options.replace){
 +                target_statements.splice(pos-1, 1);
 +            }
 +        },
 +        replaceWith: function(ast, pos, tmpl){
-+            return Ember.TemplatePatcher.insertAt(ast, pos, tmpl, {replace: true});
++            return this.insertAt(ast, pos, tmpl, {replace: true});
 +        }
 +    };
-+    if (window.Ember){
-+        Ember.TemplatePatcher = new Patcher();
-+    }
++    window.TemplatePatcher = new Patcher();
++    Handlebars.parse = window.TemplatePatcher.parse;
 +})();
 \ No newline at end of file
 diff --git a/app/assets/javascripts/main_include.js b/app/assets/javascripts/main_include.js
@@ -166,15 +165,17 @@ index 0000000..f0e916f
 +DiscoursePluginRegistry.template_injectors.each { |ti| require_asset(ti) }
 +%>
 diff --git a/app/assets/javascripts/vendor.js b/app/assets/javascripts/vendor.js
-index 4a8d64d..fadf199 100644
+index 2b0eba8..89dc0a8 100644
 --- a/app/assets/javascripts/vendor.js
 +++ b/app/assets/javascripts/vendor.js
-@@ -38,3 +38,5 @@
- //= require lock-on.js
- //= require ember-cloaking
- //= require break_string
-+
+@@ -2,6 +2,7 @@
+ //= require ./discourse/lib/probes.js
+ 
+ //= require handlebars.js
 +//= require ember-handlebars-injector.js
+ //= require jquery_include.js
+ //= require ember_include.js
+ 
 diff --git a/lib/discourse_plugin_registry.rb b/lib/discourse_plugin_registry.rb
 index 1a32e47..652821c 100644
 --- a/lib/discourse_plugin_registry.rb
