@@ -1,4 +1,4 @@
-From 24a9a17afcb988e31c976be9fa9192cc9d08a3ce Mon Sep 17 00:00:00 2001
+From 8dbacccf285c37ebf5659eb13623b77909b6a4c3 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 11:41:25 +0200
 Subject: [PATCH 2/8] make archetype API clearer and easier to handle

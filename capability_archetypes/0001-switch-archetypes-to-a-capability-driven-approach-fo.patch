@@ -1,4 +1,4 @@
-From bc25fe43097db74d783bedb0d524b3d749c76506 Mon Sep 17 00:00:00 2001
+From fcd53c546d7dca8462215f73b0798afc73dfb7d1 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 28 Mar 2014 17:47:19 +0100
 Subject: [PATCH 1/8] switch archetypes to a capability-driven approach for

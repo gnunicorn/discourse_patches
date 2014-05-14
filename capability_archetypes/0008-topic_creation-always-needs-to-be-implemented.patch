@@ -1,4 +1,4 @@
-From a2b009991fac980d5ad5ed62d5978f85d94c6c34 Mon Sep 17 00:00:00 2001
+From 539d341cddcd755e6a34df7a7caf5a77dcf38c12 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Thu, 1 May 2014 15:25:04 +0200
 Subject: [PATCH 8/8] topic_creation always needs to be implemented

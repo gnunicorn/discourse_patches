@@ -1,4 +1,4 @@
-From 713eb45bf37de87630f1c3de22e22c873fbdaa28 Mon Sep 17 00:00:00 2001
+From cc351e6cdda08acf492f79d14beb585051c9717c Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 16:56:06 +0200
 Subject: [PATCH 7/8] make archetype calls from the topic model

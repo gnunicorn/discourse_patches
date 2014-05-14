@@ -1,0 +1,24 @@
+From f925a3f5706b24f28b80683fbe9501534c0212d1 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Wed, 14 May 2014 17:48:10 +0200
+Subject: [PATCH 3/3] missing attribute accessor added
+
+---
+ lib/discourse_plugin_registry.rb | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/lib/discourse_plugin_registry.rb b/lib/discourse_plugin_registry.rb
+index 652821c..d2efe82 100644
+--- a/lib/discourse_plugin_registry.rb
++++ b/lib/discourse_plugin_registry.rb
+@@ -11,6 +11,7 @@ class DiscoursePluginRegistry
+     attr_accessor :mobile_stylesheets
+     attr_accessor :desktop_stylesheets
+     attr_accessor :sass_variables
++    attr_accessor :template_injectors
+     attr_accessor :handlebars
+ 
+     # Default accessor values
+-- 
+1.8.3.4 (Apple Git-47)
+
