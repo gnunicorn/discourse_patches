@@ -1,0 +1,91 @@
+From b89c88a55cb900adc78e0c61643d0a0d1d04776f Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Wed, 14 May 2014 20:48:32 +0200
+Subject: [PATCH] add support for customizable urls with filler
+
+---
+ app/assets/javascripts/discourse/models/topic.js          | 15 ++++++++++++++-
+ .../javascripts/discourse/routes/application_routes.js    |  2 +-
+ config/routes.rb                                          |  8 ++++----
+ config/site_settings.yml                                  |  5 +++++
+ 4 files changed, 24 insertions(+), 6 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/models/topic.js b/app/assets/javascripts/discourse/models/topic.js
+index 5d25f25..6625db5 100644
+--- a/app/assets/javascripts/discourse/models/topic.js
++++ b/app/assets/javascripts/discourse/models/topic.js
+@@ -66,9 +66,22 @@ Discourse.Topic = Discourse.Model.extend({
+     if (slug.trim().length === 0) {
+       slug = "topic";
+     }
+-    return Discourse.getURL("/t/") + slug + "/" + (this.get('id'));
++    return Discourse.getURL("/t/") + this.get("urlFiller") + slug + "/" + (this.get('id'));
+   }.property('id', 'slug'),
+ 
++  urlFillerData: function(){
++    return ["category", "isPrivateMessage"];
++  }.property(),
++
++  urlFiller: function(){
++    if (!Discourse.SiteSettings.custom_topic_url_filler) return "";
++    var context = {topic: this};
++    this.get("urlFillerData").forEach(function(name){
++      context[name] = this.get(name);
++    }.bind(this));
++    return Handlebars.compile(Discourse.SiteSettings.custom_topic_url_filler)(context);
++  }.property('id', 'category'),
++
+   // Helper to build a Url with a post number
+   urlForPostNumber: function(postNumber) {
+     var url = this.get('url');
+diff --git a/app/assets/javascripts/discourse/routes/application_routes.js b/app/assets/javascripts/discourse/routes/application_routes.js
+index 461cd2a..e15a279 100644
+--- a/app/assets/javascripts/discourse/routes/application_routes.js
++++ b/app/assets/javascripts/discourse/routes/application_routes.js
+@@ -14,7 +14,7 @@ Discourse.Route.buildRoutes(function() {
+   });
+ 
+   // Topic routes
+-  this.resource('topic', { path: '/t/:slug/:id' }, function() {
++  this.resource('topic', { path: '/*t/:slug/:id' }, function() {
+     this.route('fromParams', { path: '/' });
+     this.route('fromParamsNear', { path: '/:nearPost' });
+   });
+diff --git a/config/routes.rb b/config/routes.rb
+index d14e6f6..f107cfe 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -336,10 +336,10 @@ Discourse::Application.routes.draw do
+   get "t/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "t/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
+   get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
+-  get "t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
+-  get "t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+-  get "t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
+-  get "t/:topic_id/posts" => "topics#posts", constraints: {topic_id: /\d+/}
++  get "*t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
++  get "*t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
++  get "*t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
++  get "*t/:topic_id/posts" => "topics#posts", constraints: {topic_id: /\d+/}
+   post "t/:topic_id/timings" => "topics#timings", constraints: {topic_id: /\d+/}
+   post "t/:topic_id/invite" => "topics#invite", constraints: {topic_id: /\d+/}
+   post "t/:topic_id/move-posts" => "topics#move_posts", constraints: {topic_id: /\d+/}
+diff --git a/config/site_settings.yml b/config/site_settings.yml
+index 04eeee2..926e513 100644
+--- a/config/site_settings.yml
++++ b/config/site_settings.yml
+@@ -511,6 +511,11 @@ uncategorized:
+   sequential_replies_threshold: 2
+   dominating_topic_minimum_percent: 20
+ 
++  # custom url
++  custom_topic_url_filler:
++    default:
++    client: true
++
+   global_notice:
+     default: ""
+     client: true
+-- 
+1.8.3.4 (Apple Git-47)
+
