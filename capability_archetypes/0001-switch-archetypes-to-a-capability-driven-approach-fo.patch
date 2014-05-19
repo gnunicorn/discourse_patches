@@ -1,19 +1,21 @@
-From 045cf6ce3a69ebad622d6f6dc97dfa31dc980fda Mon Sep 17 00:00:00 2001
+From 46966494ef57aaadff18a2a135d4604532dd1234 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 28 Mar 2014 17:47:19 +0100
-Subject: [PATCH 01/18] switch archetypes to a capability-driven approach for
+Subject: [PATCH 1/3] switch archetypes to a capability-driven approach for
  better extensibility
 
 ---
  app/models/group.rb                |  2 +-
+ app/models/post.rb                 |  2 +-
  app/models/site.rb                 |  2 +-
- app/models/top_topic.rb            |  8 ++++----
- app/models/topic.rb                |  2 +-
- app/models/topic_link.rb           |  4 +++-
- app/models/topic_tracking_state.rb |  5 +++--
+ app/models/top_topic.rb            |  8 ++--
+ app/models/topic.rb                |  7 ++-
+ app/models/topic_link.rb           |  4 +-
+ app/models/topic_tracking_state.rb |  5 +-
  app/models/user_action.rb          |  2 +-
- lib/archetype.rb                   | 33 +++++++++++++++++++++++++++------
- 8 files changed, 41 insertions(+), 17 deletions(-)
+ lib/archetype.rb                   | 93 ++++++++++++++++++++++++++++++++++----
+ lib/topic_creator.rb               | 48 ++++----------------
+ 10 files changed, 111 insertions(+), 62 deletions(-)
 
 diff --git a/app/models/group.rb b/app/models/group.rb
 index 8b920e1..e290a15 100644
@@ -28,8 +30,21 @@ index 8b920e1..e290a15 100644
                   .where(post_type: Post.types[:regular])
  
      unless guardian.is_staff?
+diff --git a/app/models/post.rb b/app/models/post.rb
+index 50e7b35..8422410 100644
+--- a/app/models/post.rb
++++ b/app/models/post.rb
+@@ -48,7 +48,7 @@ class Post < ActiveRecord::Base
+   scope :by_post_number, -> { order('post_number ASC') }
+   scope :with_user, -> { includes(:user) }
+   scope :created_since, lambda { |time_ago| where('posts.created_at > ?', time_ago) }
+-  scope :public_posts, -> { joins(:topic).where('topics.archetype <> ?', Archetype.private_message) }
++  scope :public_posts, -> { joins(:topic).where('topics.archetype in (?)', Archetype.capable(:shown_publicly)) }
+   scope :private_posts, -> { joins(:topic).where('topics.archetype = ?', Archetype.private_message) }
+   scope :with_topic_subtype, ->(subtype) { joins(:topic).where('topics.subtype = ?', subtype) }
+ 
 diff --git a/app/models/site.rb b/app/models/site.rb
-index 84716f8..88d5f5a 100644
+index 84716f8..3995705 100644
 --- a/app/models/site.rb
 +++ b/app/models/site.rb
 @@ -55,7 +55,7 @@ class Site
@@ -37,7 +52,7 @@ index 84716f8..88d5f5a 100644
  
    def archetypes
 -    Archetype.list.reject { |t| t.id == Archetype.private_message }
-+    Archetype.capable :publicly_shown
++    Archetype.capable(:shown_publicly).map { |name| Archetype.get_archetype name }
    end
  
    def self.json_for(guardian)
@@ -79,10 +94,22 @@ index 352677a..c80e2c3 100644
  
    def self.update_posts_count_for(period)
 diff --git a/app/models/topic.rb b/app/models/topic.rb
-index 7afb405..e620d3f 100644
+index 7afb405..af0e561 100644
 --- a/app/models/topic.rb
 +++ b/app/models/topic.rb
-@@ -116,7 +116,7 @@ class Topic < ActiveRecord::Base
+@@ -28,6 +28,11 @@ class Topic < ActiveRecord::Base
+     2**31 - 1
+   end
+ 
++  def archetype_handle(func, *args, **kwargs)
++    @archetypeObj ||= Archetype.get_archetype(self.archetype)
++    @archetypeObj.__send__ func, *args, **kwargs
++  end
++
+   def featured_users
+     @featured_users ||= TopicFeaturedUsers.new(self)
+   end
+@@ -116,7 +121,7 @@ class Topic < ActiveRecord::Base
    # Return private message topics
    scope :private_messages, -> { where(archetype: Archetype.private_message) }
  
@@ -143,10 +170,22 @@ index b52df90..4cfcbdf 100644
  
      unless guardian.is_admin?
 diff --git a/lib/archetype.rb b/lib/archetype.rb
-index caa8cc9..6692fa0 100644
+index caa8cc9..6e7b40d 100644
 --- a/lib/archetype.rb
 +++ b/lib/archetype.rb
-@@ -17,27 +17,48 @@ class Archetype
+@@ -3,9 +3,9 @@ class Archetype
+ 
+   attr_accessor :id, :options
+ 
+-  def initialize(id, options)
++  def initialize(id, options=nil)
+     @id = id
+-    @options = options
++    @options = options || {}
+   end
+ 
+   def attributes
+@@ -17,27 +17,100 @@ class Archetype
      'regular'
    end
  
@@ -176,6 +215,10 @@ index caa8cc9..6692fa0 100644
      @archetypes.values
    end
  
++  def self.get_archetype(name)
++    @archetypes[name]
++  end
++
 +  def self.register_capability(capability, name)
 +    @capabilities ||= {}
 +    @capabilities[capability] = [] unless @capabilities.has_key? capability
@@ -185,21 +228,148 @@ index caa8cc9..6692fa0 100644
    def self.register(name, options={})
      @archetypes ||= {}
 -    @archetypes[name] = Archetype.new(name, options)
-+    archetype = options["archetype"] || Archetype.new(name, options)
++    archetype = options[:archetype] || Archetype.new(name, options)
 +    @archetypes[name] = archetype
-+    if options.has_key? :capabilties
-+      options[:capabilties].each do |cap|
++    if archetype.options.has_key? :capabilities
++      archetype.options[:capabilities].each do |cap|
++        puts cap, name
 +        register_capability(cap, name)
 +      end
 +    end
    end
  
++  def handle_topic_creation(topic_creator)
++    self
++  end
  
-   # By default we have a regular archetype and a private message
+-  # By default we have a regular archetype and a private message
 -  register 'regular'
-+  register 'regular', capabilties: [:searchable, :shown_publicly, :linkable]
-   register 'private_message'
+-  register 'private_message'
++  # By default we have a regular archetype
++  register 'regular', capabilities: [:searchable, :shown_publicly, :linkable]
  
+ end
++
++# and a private message
++class PrivateMessageArchetype < Archetype
++
++  def handle_topic_creation(topic_creator)
++    topic_creator.topic.subtype = TopicSubtype.user_to_user unless topic_creator.topic.subtype
++
++    unless topic_creator.opts[:target_usernames].present? || topic_creator.opts[:target_group_names].present?
++      topic_creator.topic.errors.add(:archetype, :cant_send_pm)
++      topic_creator.errors = topic_creator.topic.errors
++      raise ActiveRecord::Rollback.new
++    end
++
++    add_users(topic_creator.topic, topic_creator.opts[:target_usernames])
++    add_groups(topic_creator.topic, topic_creator.opts[:target_group_names])
++    topic_creator.topic.topic_allowed_users.build(user_id: topic_creator.user.id)
++  end
++
++  private
++    def add_users(topic_creator, usernames)
++      return unless usernames
++      User.where(username: usernames.split(',')).each do |user|
++        check_can_send_permission!(topic_creator, user)
++        topic_creator.topic.topic_allowed_users.build(user_id: user.id)
++      end
++    end
++
++    def add_groups(topic_creator, groups)
++      return unless groups
++      Group.where(name: groups.split(',')).each do |group|
++        check_can_send_permission!(topic_creator, group)
++        topic_creator.topic.topic_allowed_groups.build(group_id: group.id)
++      end
++    end
++
++    def check_can_send_permission!(topic_creator, item)
++      unless topic_creator.guardian.can_send_private_message?(item)
++        topic_creator.topic.errors.add(:archetype, :cant_send_pm)
++        topic_creator.errors = topic_creator.topic.errors
++        raise ActiveRecord::Rollback.new
++      end
++    end
++end
++
++Archetype.register("private_message", {archetype: PrivateMessageArchetype.new("private_message")})
+diff --git a/lib/topic_creator.rb b/lib/topic_creator.rb
+index b361bbc..9112050 100644
+--- a/lib/topic_creator.rb
++++ b/lib/topic_creator.rb
+@@ -16,7 +16,7 @@ class TopicCreator
+     @topic = Topic.new(setup_topic_params)
+ 
+     setup_auto_close_time
+-    process_private_message
++    handle_archetype
+     save_topic
+     watch_topic
+     auto_mute_topic
+@@ -42,6 +42,13 @@ class TopicCreator
+     CategoryUser.auto_watch_new_topic(@topic)
+   end
+ 
++  def handle_archetype
++    archetype = Archetype.get_archetype(@topic.archetype)
++    if archetype
++      archetype.handle_topic_creation(self)
++    end
++  end
++
+   def setup_topic_params
+     topic_params = {
+       title: @opts[:title],
+@@ -84,49 +91,10 @@ class TopicCreator
+     @topic.set_auto_close(@opts[:auto_close_time], @user)
+   end
+ 
+-  def process_private_message
+-    return unless @opts[:archetype] == Archetype.private_message
+-    @topic.subtype = TopicSubtype.user_to_user unless @topic.subtype
+-
+-    unless @opts[:target_usernames].present? || @opts[:target_group_names].present?
+-      @topic.errors.add(:archetype, :cant_send_pm)
+-      @errors = @topic.errors
+-      raise ActiveRecord::Rollback.new
+-    end
+-
+-    add_users(@topic,@opts[:target_usernames])
+-    add_groups(@topic,@opts[:target_group_names])
+-    @topic.topic_allowed_users.build(user_id: @user.id)
+-  end
+-
+   def save_topic
+     unless @topic.save(validate: !@opts[:skip_validations])
+       @errors = @topic.errors
+       raise ActiveRecord::Rollback.new
+     end
+   end
+-
+-  def add_users(topic, usernames)
+-    return unless usernames
+-    User.where(username: usernames.split(',')).each do |user|
+-      check_can_send_permission!(topic,user)
+-      topic.topic_allowed_users.build(user_id: user.id)
+-    end
+-  end
+-
+-  def add_groups(topic, groups)
+-    return unless groups
+-    Group.where(name: groups.split(',')).each do |group|
+-      check_can_send_permission!(topic,group)
+-      topic.topic_allowed_groups.build(group_id: group.id)
+-    end
+-  end
+-
+-  def check_can_send_permission!(topic,item)
+-    unless @guardian.can_send_private_message?(item)
+-      topic.errors.add(:archetype, :cant_send_pm)
+-      @errors = topic.errors
+-      raise ActiveRecord::Rollback.new
+-    end
+-  end
  end
 -- 
 1.8.3.4 (Apple Git-47)
