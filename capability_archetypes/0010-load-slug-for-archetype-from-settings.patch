@@ -1,0 +1,37 @@
+From 8fdebf0c93878db894d1939a92e97da8ee39231f Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Fri, 16 May 2014 15:45:17 +0200
+Subject: [PATCH 10/18] load slug for archetype from settings
+
+---
+ app/serializers/archetype_serializer.rb | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/app/serializers/archetype_serializer.rb b/app/serializers/archetype_serializer.rb
+index 2b89a1a..8d6cc41 100644
+--- a/app/serializers/archetype_serializer.rb
++++ b/app/serializers/archetype_serializer.rb
+@@ -1,6 +1,6 @@
+ class ArchetypeSerializer < ApplicationSerializer
+ 
+-  attributes :id, :name, :options
++  attributes :id, :name, :slug, :options
+ 
+   def options
+     object.options.keys.collect do |k|
+@@ -17,4 +17,12 @@ class ArchetypeSerializer < ApplicationSerializer
+     I18n.t("archetypes.#{object.id}.title")
+   end
+ 
++  def slug
++    begin
++      SiteSetting.send("archetypes.#{object.id}.slug") || object.id
++    rescue NoMethodError
++      object.id
++    end
++  end
++
+ end
+-- 
+1.8.3.4 (Apple Git-47)
+

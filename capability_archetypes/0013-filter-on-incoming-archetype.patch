@@ -1,0 +1,48 @@
+From a8654ec06c5eacb966b247b8d611801052490e89 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 19 May 2014 11:38:35 +0200
+Subject: [PATCH 13/18] filter on incoming archetype
+
+---
+ app/controllers/list_controller.rb | 1 +
+ lib/topic_query.rb                 | 5 +++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/app/controllers/list_controller.rb b/app/controllers/list_controller.rb
+index 11adede..f3d32e7 100644
+--- a/app/controllers/list_controller.rb
++++ b/app/controllers/list_controller.rb
+@@ -269,6 +269,7 @@ class ListController < ApplicationController
+       ascending: params[:ascending],
+       status: params[:status]
+     }
++    options[:archetype] = params[:archetype] if params[:archetype].present?
+     options[:no_subcategories] = true if params[:no_subcategories] == 'true'
+ 
+     options
+diff --git a/lib/topic_query.rb b/lib/topic_query.rb
+index 318c53d..0469831 100644
+--- a/lib/topic_query.rb
++++ b/lib/topic_query.rb
+@@ -18,6 +18,7 @@ class TopicQuery
+                      category
+                      order
+                      ascending
++                     archetype
+                      no_subcategories
+                      no_definitions
+                      status).map(&:to_sym)
+@@ -222,6 +223,10 @@ class TopicQuery
+                        .references('tu')
+       end
+ 
++      if options[:archetype].present?
++        result = result.where('topics.archetype = ?', options[:archetype])
++      end
++
+       category_id = nil
+       if options[:category].present?
+         category_id  = options[:category].to_i
+-- 
+1.8.3.4 (Apple Git-47)
+

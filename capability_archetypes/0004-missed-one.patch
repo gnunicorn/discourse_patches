@@ -1,7 +1,7 @@
-From be36b779822579fcc3361778d659f639ff91e99d Mon Sep 17 00:00:00 2001
+From af551cbbb4586e71e0487ed8da9663894162d35f Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 12:29:15 +0200
-Subject: [PATCH 4/8] missed one
+Subject: [PATCH 04/18] missed one
 
 ---
  app/models/post.rb | 2 +-

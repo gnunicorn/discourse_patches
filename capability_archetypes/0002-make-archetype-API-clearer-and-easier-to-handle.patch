@@ -1,7 +1,7 @@
-From 8dbacccf285c37ebf5659eb13623b77909b6a4c3 Mon Sep 17 00:00:00 2001
+From 5f7c3b77a8e1caf4489996c5eb1cee9a7fc35111 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 11:41:25 +0200
-Subject: [PATCH 2/8] make archetype API clearer and easier to handle
+Subject: [PATCH 02/18] make archetype API clearer and easier to handle
 
 ---
  lib/archetype.rb | 12 ++++++++----

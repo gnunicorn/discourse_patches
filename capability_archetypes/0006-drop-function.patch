@@ -1,7 +1,7 @@
-From 899bd84999892cdca5edbf55079a7c1bb8f10ca8 Mon Sep 17 00:00:00 2001
+From ad4cef3cd43d7fba0456c9d0e7f615f1e4a823a7 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 16:55:49 +0200
-Subject: [PATCH 6/8] drop function
+Subject: [PATCH 06/18] drop function
 
 ---
  lib/archetype.rb | 3 ---

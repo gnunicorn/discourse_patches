@@ -1,4 +1,4 @@
-From 3f2eb436411c087b41902f7b4559330f37422429 Mon Sep 17 00:00:00 2001
+From c8035836e09681bfd94cf1c88b4495b265b3445b Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
 Subject: [PATCH 1/3] template injector plugin infrastructure added
@@ -211,11 +211,11 @@ index 1a32e47..652821c 100644
  
    def self.setup(plugin_class)
 diff --git a/lib/plugin/instance.rb b/lib/plugin/instance.rb
-index 297726f..fe26bf2 100644
+index 55fffea..da96014 100644
 --- a/lib/plugin/instance.rb
 +++ b/lib/plugin/instance.rb
 @@ -215,6 +215,8 @@ class Plugin::Instance
-       if asset =~ /\.js$|\.js\.erb$/
+       if asset =~ /\.js$|\.js\.erb$|\.js\.es6$/
          if opts == :admin
            DiscoursePluginRegistry.admin_javascripts << asset
 +        elsif opts == :template_injector

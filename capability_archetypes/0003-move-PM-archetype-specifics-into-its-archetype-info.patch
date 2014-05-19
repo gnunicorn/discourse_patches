@@ -1,7 +1,7 @@
-From 2d7c1da7c507cc4da80b54e2bd20bbb5c2dc7892 Mon Sep 17 00:00:00 2001
+From 561c87f9a92263f24ac7a2732c90c51ccc5968f2 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 31 Mar 2014 11:41:51 +0200
-Subject: [PATCH 3/8] move PM archetype specifics into its archetype info
+Subject: [PATCH 03/18] move PM archetype specifics into its archetype info
 
 ---
  lib/archetype.rb     | 52 +++++++++++++++++++++++++++++++++++++++++++++++++---

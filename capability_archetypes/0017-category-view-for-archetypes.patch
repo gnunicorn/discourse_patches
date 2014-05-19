@@ -1,0 +1,177 @@
+From ac76c2463fe798a2829cfd7dec6cae76499470cc Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 19 May 2014 14:16:00 +0200
+Subject: [PATCH 17/18] category view for archetypes
+
+---
+ .../controllers/navigation_default_controller.js     |  2 +-
+ app/assets/javascripts/discourse/lib/html.js         |  3 ++-
+ app/assets/javascripts/discourse/models/category.js  | 14 ++++++++++++--
+ .../discourse/routes/discovery_categories_route.js   |  7 +++++++
+ .../discourse/routes/discovery_route_builders.js     | 20 +++++++++++++-------
+ 5 files changed, 35 insertions(+), 11 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/controllers/navigation_default_controller.js b/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
+index cf41d8d..67634d3 100644
+--- a/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
++++ b/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
+@@ -9,7 +9,7 @@
+ Discourse.NavigationDefaultController = Discourse.Controller.extend({
+   categories: function() {
+     return Discourse.Category.list();
+-  }.property(),
++  }.property('archetype'),
+ 
+   navItems: function() {
+     var args = {};
+diff --git a/app/assets/javascripts/discourse/lib/html.js b/app/assets/javascripts/discourse/lib/html.js
+index d3fbff5..43b1d20 100644
+--- a/app/assets/javascripts/discourse/lib/html.js
++++ b/app/assets/javascripts/discourse/lib/html.js
+@@ -86,7 +86,8 @@ Discourse.HTML = {
+     var name = Em.get(category, 'name'),
+         description = Em.get(category, 'description'),
+         restricted = Em.get(category, 'read_restricted'),
+-        url = Discourse.getURL("/category/") + Discourse.Category.slugFor(category),
++        prefix = Em.get(category, "prefix"),
++        url = Discourse.getURL(prefix + "/category/") + Discourse.Category.slugFor(category),
+         elem = (opts.link === false ? 'span' : 'a'),
+         extraClasses = (opts.extraClasses ? (' ' + opts.extraClasses) : ''),
+         html = "<" + elem + " href=\"" + (opts.link === false ? '' : url) + "\" ";
+diff --git a/app/assets/javascripts/discourse/models/category.js b/app/assets/javascripts/discourse/models/category.js
+index a6383f8..10b7c73 100644
+--- a/app/assets/javascripts/discourse/models/category.js
++++ b/app/assets/javascripts/discourse/models/category.js
+@@ -32,8 +32,8 @@ Discourse.Category = Discourse.Model.extend({
+   }.property('id'),
+ 
+   url: function() {
+-    return Discourse.getURL("/category/") + Discourse.Category.slugFor(this);
+-  }.property('name'),
++    return Discourse.getURL(this.get("prefix") + "/category/") + Discourse.Category.slugFor(this);
++  }.property('name', 'archetype'),
+ 
+   unreadUrl: function() {
+     return this.get('url') + '/l/unread';
+@@ -86,6 +86,10 @@ Discourse.Category = Discourse.Model.extend({
+     return Discourse.ajax("/categories/" + (this.get('slug') || this.get('id')), { type: 'DELETE' });
+   },
+ 
++  prefix: function(){
++    return this.get("archetype") ?  "/" + this.get("archetype") : "";
++  }.property("archetype"),
++
+   addPermission: function(permission){
+     this.get("permissions").addObject(permission);
+     this.get("availableGroups").removeObject(permission.group_name);
+@@ -210,6 +214,12 @@ Discourse.Category.reopenClass({
+     return Discourse.Category.list().findBy('id', id);
+   },
+ 
++  setArchetype: function(archetype) {
++    Discourse.Category.list().forEach(function(cat) {
++      cat.set("archetype", archetype)
++    });
++  },
++
+   findByIds: function(ids){
+     var categories = [];
+     _.each(ids, function(id){
+diff --git a/app/assets/javascripts/discourse/routes/discovery_categories_route.js b/app/assets/javascripts/discourse/routes/discovery_categories_route.js
+index 94c3314..6c15c8a 100644
+--- a/app/assets/javascripts/discourse/routes/discovery_categories_route.js
++++ b/app/assets/javascripts/discourse/routes/discovery_categories_route.js
+@@ -14,6 +14,7 @@ Discourse.DiscoveryCategoriesRoute = Discourse.Route.extend({
+   },
+ 
+   beforeModel: function() {
++    Discourse.Category.setArchetype(this.get("archetype_filter"));
+     this.controllerFor('navigationCategories').setProperties({filterMode: 'categories', archetype: this.get("archetype_filter")});
+   },
+ 
+@@ -21,6 +22,7 @@ Discourse.DiscoveryCategoriesRoute = Discourse.Route.extend({
+     // TODO: Remove this and ensure server side does not supply `topic_list`
+     // if default page is categories
+     PreloadStore.remove("topic_list");
++    var archetype_filter = this.get("archetype_filter");
+ 
+     return Discourse.CategoryList.list('categories').then(function(list) {
+       var tracking = Discourse.TopicTrackingState.current();
+@@ -29,6 +31,11 @@ Discourse.DiscoveryCategoriesRoute = Discourse.Route.extend({
+         tracking.trackIncoming('categories');
+       }
+       return list;
++    }).then(function(model) {
++      model.categories.forEach(function(cat){
++        cat.set("archetype", archetype_filter);
++      });
++      return model;
+     });
+   },
+ 
+diff --git a/app/assets/javascripts/discourse/routes/discovery_route_builders.js b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
+index dc2b86a..b22403f 100644
+--- a/app/assets/javascripts/discourse/routes/discovery_route_builders.js
++++ b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
+@@ -14,6 +14,7 @@ function buildTopicRoute(filter, archetype) {
+ 
+     beforeModel: function() {
+       this.controllerFor('navigationDefault').setProperties({filterMode: filter, archetype: archetype});
++      Discourse.Category.setArchetype(archetype);
+     },
+ 
+     model: function(data, transaction) {
+@@ -93,9 +94,13 @@ function buildTopicRoute(filter, archetype) {
+   @param {Object} params with additional options
+ **/
+ function buildCategoryRoute(filter, params) {
++  var archetype = params.archetype || '';
+   return Discourse.Route.extend({
+     model: function(params) {
+-      return Discourse.Category.findBySlug(params.slug, params.parentSlug);
++      Discourse.Category.setArchetype(archetype);
++      var model = Discourse.Category.findBySlug(params.slug, params.parentSlug);
++      model.set("archetype", archetype);
++      return model;
+     },
+ 
+     afterModel: function(model) {
+@@ -109,6 +114,7 @@ function buildCategoryRoute(filter, params) {
+       var opts = { category: model, filterMode: filterMode };
+       opts.noSubcategories = params && params.no_subcategories;
+       opts.canEditCategory = Discourse.User.currentProp('staff');
++      if (archetype) opts.archetype = archetype;
+       this.controllerFor('navigationCategory').setProperties(opts);
+ 
+       return Discourse.TopicList.list(listFilter, params).then(function(list) {
+@@ -159,21 +165,21 @@ function buildCategoryRoute(filter, params) {
+ // Finally, build all the routes with the helpers we created
+ Discourse.addInitializer(function() {
+   var builder =( function(prefix, archetype){
+-    Discourse[prefix + "CategoryRoute"] = buildCategoryRoute('latest');
+-    Discourse[prefix + "CategoryNoneRoute"] = buildCategoryRoute('latest', {no_subcategories: true});
++    Discourse[prefix + "CategoryRoute"] = buildCategoryRoute('latest', {archetype: archetype});
++    Discourse[prefix + "CategoryNoneRoute"] = buildCategoryRoute('latest', {no_subcategories: true, archetype: archetype});
+ 
+     Discourse.Site.currentProp('filters').forEach(function(filter) {
+       Discourse[prefix + filter.capitalize() + "Controller"] = Discourse.DiscoverySortableController.extend();
+       Discourse[prefix + filter.capitalize() + "Route"] = buildTopicRoute(filter, archetype);
+-      Discourse[prefix + filter.capitalize() + "CategoryRoute"] = buildCategoryRoute(filter, archetype);
+-      Discourse[prefix + filter.capitalize() + "CategoryNoneRoute"] = buildCategoryRoute(filter, {no_subcategories: true});
++      Discourse[prefix + filter.capitalize() + "CategoryRoute"] = buildCategoryRoute(filter, {archetype: archetype});
++      Discourse[prefix + filter.capitalize() + "CategoryNoneRoute"] = buildCategoryRoute(filter, {no_subcategories: true, archetype: archetype});
+     });
+ 
+     Discourse.Site.currentProp('periods').forEach(function(period) {
+       Discourse[prefix + "Top" + period.capitalize() + "Controller"] = Discourse.DiscoverySortableController.extend();
+       Discourse[prefix + "Top" + period.capitalize() + "Route"] = buildTopicRoute('top/' + period, archetype);
+-      Discourse[prefix + "Top" + period.capitalize() + "CategoryRoute"] = buildCategoryRoute('top/' + period);
+-      Discourse[prefix + "Top" + period.capitalize() + "CategoryNoneRoute"] = buildCategoryRoute('top/' + period, {no_subcategories: true});
++      Discourse[prefix + "Top" + period.capitalize() + "CategoryRoute"] = buildCategoryRoute('top/' + period, { archetype: archetype});
++      Discourse[prefix + "Top" + period.capitalize() + "CategoryNoneRoute"] = buildCategoryRoute('top/' + period, {no_subcategories: true, archetype: archetype});
+     });
+   });
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

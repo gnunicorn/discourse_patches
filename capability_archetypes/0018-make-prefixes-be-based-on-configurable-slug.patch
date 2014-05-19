@@ -1,0 +1,98 @@
+From e90d17f1d2a5b316960269954f27da48194dd577 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 19 May 2014 15:00:51 +0200
+Subject: [PATCH 18/18] make prefixes be based on configurable slug
+
+---
+ app/assets/javascripts/discourse/models/archetype.js |  6 ++++++
+ app/assets/javascripts/discourse/models/category.js  |  7 ++++++-
+ app/assets/javascripts/discourse/models/nav_item.js  |  2 +-
+ app/serializers/archetype_serializer.rb              |  2 +-
+ config/routes.rb                                     | 11 +++++++----
+ 5 files changed, 21 insertions(+), 7 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/models/archetype.js b/app/assets/javascripts/discourse/models/archetype.js
+index cfbc88c..85d2238 100644
+--- a/app/assets/javascripts/discourse/models/archetype.js
++++ b/app/assets/javascripts/discourse/models/archetype.js
+@@ -19,4 +19,10 @@ Discourse.Archetype = Discourse.Model.extend({
+ 
+ });
+ 
++Discourse.Archetype.reopenClass({
++  getSlug: function(id){
++    return Discourse.Site.currentProp("archetypes").findBy("id", id).slug;
++  }
++});
++
+ 
+diff --git a/app/assets/javascripts/discourse/models/category.js b/app/assets/javascripts/discourse/models/category.js
+index 10b7c73..de69c3d 100644
+--- a/app/assets/javascripts/discourse/models/category.js
++++ b/app/assets/javascripts/discourse/models/category.js
+@@ -87,7 +87,12 @@ Discourse.Category = Discourse.Model.extend({
+   },
+ 
+   prefix: function(){
+-    return this.get("archetype") ?  "/" + this.get("archetype") : "";
++    return this.get("archetypeSlug") ?  "/" + this.get("archetypeSlug") : "";
++  }.property("archetypeSlug"),
++
++  archetypeSlug: function(){
++    var archetype = this.get("archetype");
++    return archetype ? Discourse.Archetype.getSlug(archetype) : "";
+   }.property("archetype"),
+ 
+   addPermission: function(permission){
+diff --git a/app/assets/javascripts/discourse/models/nav_item.js b/app/assets/javascripts/discourse/models/nav_item.js
+index b705f42..a21cdb6 100644
+--- a/app/assets/javascripts/discourse/models/nav_item.js
++++ b/app/assets/javascripts/discourse/models/nav_item.js
+@@ -35,7 +35,7 @@ Discourse.NavItem = Discourse.Model.extend({
+   // href from this item
+   filterMode: function() {
+     var name = this.get('name'),
+-        arch = this.get('archetype') ? this.get('archetype') + "/": "";
++        arch = this.get('archetype') ? Discourse.Archetype.getSlug(this.get('archetype')) + "/": "";
+ 
+     if( name.split('/')[0] === 'category' ) {
+       return 'category/' + this.get('categorySlug');
+diff --git a/app/serializers/archetype_serializer.rb b/app/serializers/archetype_serializer.rb
+index 8d6cc41..94d33f4 100644
+--- a/app/serializers/archetype_serializer.rb
++++ b/app/serializers/archetype_serializer.rb
+@@ -19,7 +19,7 @@ class ArchetypeSerializer < ApplicationSerializer
+ 
+   def slug
+     begin
+-      SiteSetting.send("archetypes.#{object.id}.slug") || object.id
++      SiteSetting.send("archetypes_#{object.id}_slug") || object.id
+     rescue NoMethodError
+       object.id
+     end
+diff --git a/config/routes.rb b/config/routes.rb
+index 1ae1b52..b85178f 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -305,11 +305,14 @@ Discourse::Application.routes.draw do
+   categorizer ""
+ 
+   Archetype.capable(:shown_publicly).each do |id|
+-    name = I18n.t("archetypes.#{id}.slug")
+-    name = id if name.start_with?("translation missing:")
++    name = begin
++            SiteSetting.send("archetypes_#{id}_slug") || id
++          rescue NoMethodError
++            id
++          end
+     scope "/#{name}" do
+-      categorizer(name)
+-      get "" => "list#latest", defaults: { archetype: name }
++      categorizer(id)
++      get "" => "list#latest", defaults: { archetype: id }
+     end
+   end
+ 
+-- 
+1.8.3.4 (Apple Git-47)
+

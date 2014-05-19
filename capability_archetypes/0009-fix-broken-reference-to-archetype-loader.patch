@@ -1,0 +1,25 @@
+From af754a35108296aca3986a47fd0d0ab9e5da182a Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Fri, 16 May 2014 15:44:15 +0200
+Subject: [PATCH 09/18] fix broken reference to archetype loader
+
+---
+ app/models/site.rb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app/models/site.rb b/app/models/site.rb
+index 88d5f5a..3995705 100644
+--- a/app/models/site.rb
++++ b/app/models/site.rb
+@@ -55,7 +55,7 @@ class Site
+   end
+ 
+   def archetypes
+-    Archetype.capable :publicly_shown
++    Archetype.capable(:shown_publicly).map { |name| Archetype.get_archetype name }
+   end
+ 
+   def self.json_for(guardian)
+-- 
+1.8.3.4 (Apple Git-47)
+
