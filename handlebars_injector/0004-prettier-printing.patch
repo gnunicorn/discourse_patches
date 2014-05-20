@@ -1,0 +1,48 @@
+From 07db5229468686f869688e741c4029b293f405c7 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Tue, 20 May 2014 11:38:12 +0200
+Subject: [PATCH 4/5] prettier printing
+
+---
+ app/assets/javascripts/ember-handlebars-injector.js | 9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/app/assets/javascripts/ember-handlebars-injector.js b/app/assets/javascripts/ember-handlebars-injector.js
+index b7ac937..b98fcf9 100644
+--- a/app/assets/javascripts/ember-handlebars-injector.js
++++ b/app/assets/javascripts/ember-handlebars-injector.js
+@@ -52,8 +52,9 @@
+         return _find_in_tree(query, statements);
+     }
+ 
+-    function _print_tree(listing, path){
++    function _print_tree(listing, path, options){
+         var typecounts = {},
++            options = options || {},
+             path = path || "";
+ 
+         function subtree(idx, type, lst){
+@@ -67,7 +68,7 @@
+             typecounts[type] = typecount + 1;
+         }
+ 
+-        for (var i = 0; i < listing.length; i++){
++        for (var i = 0, end = options.length || listing.length; i < end ; i++){
+             var item = listing[i];
+             if (item.mustache) {
+                 var type = item.mustache.id.original;
+@@ -119,9 +120,9 @@
+             }
+             return ast;
+         },
+-        printTree: function(ast) {
++        printTree: function(ast, options) {
+             console.log("Tree");
+-            _print_tree(ast.statements);
++            _print_tree(ast.statements, "", options);
+         },
+         addGeneralPatcher: function(hashes, cb){
+             if (typeof hashes === "string") hashes = [hashes];
+-- 
+1.8.3.4 (Apple Git-47)
+

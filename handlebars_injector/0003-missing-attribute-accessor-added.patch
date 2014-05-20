@@ -1,7 +1,7 @@
 From e7a4777c72ed1c9debc86c590742fd147034bcd6 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Wed, 14 May 2014 17:48:10 +0200
-Subject: [PATCH 3/3] missing attribute accessor added
+Subject: [PATCH 3/5] missing attribute accessor added
 
 ---
  lib/discourse_plugin_registry.rb | 1 +
