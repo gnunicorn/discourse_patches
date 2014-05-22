@@ -1,4 +1,4 @@
-From c8035836e09681bfd94cf1c88b4495b265b3445b Mon Sep 17 00:00:00 2001
+From 36c751f9789d0d67233a06f9a72074ed618fcc3c Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
 Subject: [PATCH 1/5] template injector plugin infrastructure added
@@ -144,10 +144,10 @@ index 0000000..cdd2e2b
 +})();
 \ No newline at end of file
 diff --git a/app/assets/javascripts/main_include.js b/app/assets/javascripts/main_include.js
-index 273d9b8..dc9c591 100644
+index 14f912e..f1c6f07 100644
 --- a/app/assets/javascripts/main_include.js
 +++ b/app/assets/javascripts/main_include.js
-@@ -34,6 +34,7 @@
+@@ -35,6 +35,7 @@
  //= require_tree ./discourse/components
  //= require_tree ./discourse/views
  //= require_tree ./discourse/helpers

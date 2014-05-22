@@ -1,4 +1,4 @@
-From 75d4216fa3abc08bbd27615a6507219d22b6a5ed Mon Sep 17 00:00:00 2001
+From 7b7b6ad7c4e9bf3c69cddd7c5baf5f3ba36c3601 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Wed, 14 May 2014 20:48:32 +0200
 Subject: [PATCH] add support for customizable urls with filler
@@ -71,10 +71,10 @@ index 98e0541..51ab740 100644
    post "t/:topic_id/invite" => "topics#invite", constraints: {topic_id: /\d+/}
    post "t/:topic_id/move-posts" => "topics#move_posts", constraints: {topic_id: /\d+/}
 diff --git a/config/site_settings.yml b/config/site_settings.yml
-index c4f3f8a..850cda3 100644
+index f99260c..0ae9e61 100644
 --- a/config/site_settings.yml
 +++ b/config/site_settings.yml
-@@ -514,6 +514,11 @@ uncategorized:
+@@ -523,6 +523,11 @@ uncategorized:
    sequential_replies_threshold: 2
    dominating_topic_minimum_percent: 20
  

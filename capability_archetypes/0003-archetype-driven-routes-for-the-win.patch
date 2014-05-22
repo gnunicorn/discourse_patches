@@ -1,10 +1,11 @@
-From a30d1d57429e3759e32a56ef936cb213dcf328f9 Mon Sep 17 00:00:00 2001
+From 2adda9b1d0ba1f166c481f226f44a6a9c9a3ecab Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
 
 ---
- .../controllers/navigation_default_controller.js   | 18 ++++--
+ .../controllers/navigation/category.js.es6         |  8 ++-
+ .../controllers/navigation/default.js.es6          | 10 ++-
  app/assets/javascripts/discourse/lib/html.js       |  3 +-
  .../javascripts/discourse/models/archetype.js      |  6 ++
  .../javascripts/discourse/models/category.js       | 19 +++++-
@@ -15,15 +16,34 @@ Subject: [PATCH 3/3] archetype driven routes for the win
  app/controllers/list_controller.rb                 |  1 +
  app/serializers/archetype_serializer.rb            |  2 +-
  config/routes.rb                                   | 74 ++++++++++++++--------
+ lib/archetype.rb                                   |  1 -
  lib/topic_query.rb                                 |  5 ++
- 12 files changed, 173 insertions(+), 61 deletions(-)
+ 14 files changed, 173 insertions(+), 62 deletions(-)
 
-diff --git a/app/assets/javascripts/discourse/controllers/navigation_default_controller.js b/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
-index 5d4e976..67634d3 100644
---- a/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
-+++ b/app/assets/javascripts/discourse/controllers/navigation_default_controller.js
-@@ -9,17 +9,25 @@
- Discourse.NavigationDefaultController = Discourse.Controller.extend({
+diff --git a/app/assets/javascripts/discourse/controllers/navigation/category.js.es6 b/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
+index 29596b8..1838c2b 100644
+--- a/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
++++ b/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
+@@ -2,7 +2,11 @@ import NavigationDefaultController from 'discourse/controllers/navigation/defaul
+ 
+ export default NavigationDefaultController.extend({
+   navItems: function() {
+-    return Discourse.NavItem.buildList(this.get('category'), { noSubcategories: this.get('noSubcategories') });
+-  }.property('category', 'noSubcategories')
++    var args = { noSubcategories: this.get('noSubcategories') };
++    if (this.get("archetype")){
++      args.archetype = this.get("archetype");
++    }
++    return Discourse.NavItem.buildList(this.get('category'), args);
++  }.property('category', 'noSubcategories', 'archetype')
+ });
+ 
+diff --git a/app/assets/javascripts/discourse/controllers/navigation/default.js.es6 b/app/assets/javascripts/discourse/controllers/navigation/default.js.es6
+index 84824c8..caee951 100644
+--- a/app/assets/javascripts/discourse/controllers/navigation/default.js.es6
++++ b/app/assets/javascripts/discourse/controllers/navigation/default.js.es6
+@@ -9,9 +9,13 @@
+ export default Discourse.Controller.extend({
    categories: function() {
      return Discourse.Category.list();
 -  }.property(),
@@ -39,20 +59,6 @@ index 5d4e976..67634d3 100644
 +    return Discourse.NavItem.buildList('', args);
 +  }.property('archetype')
  });
- 
- Discourse.NavigationCategoryController = Discourse.NavigationDefaultController.extend({
-   navItems: function() {
--    return Discourse.NavItem.buildList(this.get('category'), { noSubcategories: this.get('noSubcategories') });
--  }.property('category', 'noSubcategories')
-+    var args = { noSubcategories: this.get('noSubcategories') };
-+    if (this.get("archetype")){
-+      args.archetype = this.get("archetype");
-+    }
-+    return Discourse.NavItem.buildList(this.get('category'), args);
-+  }.property('category', 'noSubcategories', 'archetype')
- });
- 
- Discourse.NavigationCategoriesController = Discourse.NavigationDefaultController.extend({});
 diff --git a/app/assets/javascripts/discourse/lib/html.js b/app/assets/javascripts/discourse/lib/html.js
 index d3fbff5..43b1d20 100644
 --- a/app/assets/javascripts/discourse/lib/html.js
@@ -211,7 +217,7 @@ index 461cd2a..0d96b1e 100644
  
    this.resource('group', { path: '/groups/:name' }, function() {
 diff --git a/app/assets/javascripts/discourse/routes/discovery_categories_route.js b/app/assets/javascripts/discourse/routes/discovery_categories_route.js
-index 42d2cfc..6c15c8a 100644
+index 82edf29..8172893 100644
 --- a/app/assets/javascripts/discourse/routes/discovery_categories_route.js
 +++ b/app/assets/javascripts/discourse/routes/discovery_categories_route.js
 @@ -7,19 +7,22 @@
@@ -225,9 +231,9 @@ index 42d2cfc..6c15c8a 100644
    },
  
    beforeModel: function() {
--    this.controllerFor('navigationCategories').set('filterMode', 'categories');
+-    this.controllerFor('navigation/categories').set('filterMode', 'categories');
 +    Discourse.Category.setArchetype(this.get("archetype_filter"));
-+    this.controllerFor('navigationCategories').setProperties({filterMode: 'categories', archetype: this.get("archetype_filter")});
++    this.controllerFor('navigation/categories').setProperties({filterMode: 'categories', archetype: this.get("archetype_filter")});
    },
  
    model: function() {
@@ -251,7 +257,7 @@ index 42d2cfc..6c15c8a 100644
    },
  
 diff --git a/app/assets/javascripts/discourse/routes/discovery_route_builders.js b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
-index 98c06b9..b22403f 100644
+index 0d2aa32..f321d0a 100644
 --- a/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 +++ b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 @@ -4,15 +4,17 @@
@@ -269,8 +275,8 @@ index 98c06b9..b22403f 100644
      },
  
      beforeModel: function() {
--      this.controllerFor('navigationDefault').set('filterMode', filter);
-+      this.controllerFor('navigationDefault').setProperties({filterMode: filter, archetype: archetype});
+-      this.controllerFor('navigation/default').set('filterMode', filter);
++      this.controllerFor('navigation/default').setProperties({filterMode: filter, archetype: archetype});
 +      Discourse.Category.setArchetype(archetype);
      },
  
@@ -314,7 +320,7 @@ index 98c06b9..b22403f 100644
        opts.noSubcategories = params && params.no_subcategories;
        opts.canEditCategory = Discourse.User.currentProp('staff');
 +      if (archetype) opts.archetype = archetype;
-       this.controllerFor('navigationCategory').setProperties(opts);
+       this.controllerFor('navigation/category').setProperties(opts);
  
        return Discourse.TopicList.list(listFilter, params).then(function(list) {
 @@ -156,20 +164,30 @@ function buildCategoryRoute(filter, params) {
@@ -474,6 +480,18 @@ index 98e0541..b85178f 100644
    end
  
    get "search" => "search#query"
+diff --git a/lib/archetype.rb b/lib/archetype.rb
+index 6e7b40d..c5c16a3 100644
+--- a/lib/archetype.rb
++++ b/lib/archetype.rb
+@@ -55,7 +55,6 @@ class Archetype
+     @archetypes[name] = archetype
+     if archetype.options.has_key? :capabilities
+       archetype.options[:capabilities].each do |cap|
+-        puts cap, name
+         register_capability(cap, name)
+       end
+     end
 diff --git a/lib/topic_query.rb b/lib/topic_query.rb
 index 318c53d..0469831 100644
 --- a/lib/topic_query.rb
