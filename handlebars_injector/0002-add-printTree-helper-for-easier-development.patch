@@ -1,7 +1,7 @@
-From dbebe40269c57d742a327113d89e9b88cf4a921a Mon Sep 17 00:00:00 2001
+From a6cfc9a968e3c637b6825a10c39c6e7ab47d0f3e Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Sat, 10 May 2014 17:02:43 +0200
-Subject: [PATCH 2/5] add printTree helper for easier development
+Subject: [PATCH 2/6] add printTree helper for easier development
 
 ---
  .../javascripts/ember-handlebars-injector.js       | 52 +++++++++++++++++++++-

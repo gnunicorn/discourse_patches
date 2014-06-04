@@ -1,0 +1,34 @@
+From 06ec1ca45675610edd35cc178a3022275679c9e5 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Mon, 26 May 2014 18:34:40 +0200
+Subject: [PATCH 2/2] fix routing for editing
+
+---
+ config/routes.rb | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/routes.rb b/config/routes.rb
+index 954847e..aefa863 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -330,8 +330,6 @@ Discourse::Application.routes.draw do
+   get "t/:topic_id/wordpress" => "topics#wordpress", constraints: {topic_id: /\d+/}
+   get "t/:slug/:topic_id/summary" => "topics#show", defaults: {summary: true}, constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "t/:topic_id/summary" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+-  put "t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
+-  put "t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+   put "t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+@@ -345,6 +343,8 @@ Discourse::Application.routes.draw do
+   get "t/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "t/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
+   get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+   get "*t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
+   get "*t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "*t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
+-- 
+1.8.3.4 (Apple Git-47)
+

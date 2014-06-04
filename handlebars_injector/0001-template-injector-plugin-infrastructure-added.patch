@@ -1,7 +1,7 @@
-From 36c751f9789d0d67233a06f9a72074ed618fcc3c Mon Sep 17 00:00:00 2001
+From 14f3e49a6d3c74f2408a69fbc2096722b956a81b Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
-Subject: [PATCH 1/5] template injector plugin infrastructure added
+Subject: [PATCH 1/6] template injector plugin infrastructure added
 
 ---
  .../javascripts/ember-handlebars-injector.js       | 120 +++++++++++++++++++++
@@ -144,10 +144,10 @@ index 0000000..cdd2e2b
 +})();
 \ No newline at end of file
 diff --git a/app/assets/javascripts/main_include.js b/app/assets/javascripts/main_include.js
-index 14f912e..f1c6f07 100644
+index 39ec8b9..cb2ac30 100644
 --- a/app/assets/javascripts/main_include.js
 +++ b/app/assets/javascripts/main_include.js
-@@ -35,6 +35,7 @@
+@@ -36,6 +36,7 @@
  //= require_tree ./discourse/components
  //= require_tree ./discourse/views
  //= require_tree ./discourse/helpers
@@ -165,7 +165,7 @@ index 0000000..f0e916f
 +DiscoursePluginRegistry.template_injectors.each { |ti| require_asset(ti) }
 +%>
 diff --git a/app/assets/javascripts/vendor.js b/app/assets/javascripts/vendor.js
-index e7180b2..9551463 100644
+index 0851f91..c440a5b 100644
 --- a/app/assets/javascripts/vendor.js
 +++ b/app/assets/javascripts/vendor.js
 @@ -3,6 +3,7 @@
@@ -211,10 +211,10 @@ index 1a32e47..652821c 100644
  
    def self.setup(plugin_class)
 diff --git a/lib/plugin/instance.rb b/lib/plugin/instance.rb
-index 55fffea..da96014 100644
+index e8e5ccd..8eee408 100644
 --- a/lib/plugin/instance.rb
 +++ b/lib/plugin/instance.rb
-@@ -215,6 +215,8 @@ class Plugin::Instance
+@@ -234,6 +234,8 @@ class Plugin::Instance
        if asset =~ /\.js$|\.js\.erb$|\.js\.es6$/
          if opts == :admin
            DiscoursePluginRegistry.admin_javascripts << asset
@@ -242,7 +242,7 @@ index 650d864..5eafc78 100644
      it 'defaults to an empty Set' do
        registry.server_side_javascripts = nil
 diff --git a/spec/components/plugin/instance_spec.rb b/spec/components/plugin/instance_spec.rb
-index c61ff9c..cd97beb 100644
+index bb7de3c..e2fb427 100644
 --- a/spec/components/plugin/instance_spec.rb
 +++ b/spec/components/plugin/instance_spec.rb
 @@ -91,6 +91,18 @@ describe Plugin::Instance do

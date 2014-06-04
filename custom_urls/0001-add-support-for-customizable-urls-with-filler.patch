@@ -1,14 +1,14 @@
-From a8a866fa2cf85d7324b1f5d35a77b7f37b96da9b Mon Sep 17 00:00:00 2001
-From: Piioo <Piotr.Szal@googlemail.com>
-Date: Mon, 26 May 2014 16:17:31 +0200
-Subject: [PATCH] add support for customizable urls with filler
+From 086252be7ae7d431777ae0e30ead7be2235cdc87 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Wed, 14 May 2014 20:48:32 +0200
+Subject: [PATCH 1/2] add support for customizable urls with filler
 
 ---
- app/assets/javascripts/discourse/models/topic.js         | 15 ++++++++++++++-
- .../javascripts/discourse/routes/application_routes.js   |  2 +-
- config/routes.rb                                         | 16 ++++++++--------
- config/site_settings.yml                                 |  5 +++++
- 4 files changed, 28 insertions(+), 10 deletions(-)
+ app/assets/javascripts/discourse/models/topic.js          | 15 ++++++++++++++-
+ .../javascripts/discourse/routes/application_routes.js    |  2 +-
+ config/routes.rb                                          |  8 ++++----
+ config/site_settings.yml                                  |  5 +++++
+ 4 files changed, 24 insertions(+), 6 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/models/topic.js b/app/assets/javascripts/discourse/models/topic.js
 index 5d25f25..6625db5 100644
@@ -52,33 +52,17 @@ index 461cd2a..e15a279 100644
      this.route('fromParamsNear', { path: '/:nearPost' });
    });
 diff --git a/config/routes.rb b/config/routes.rb
-index 98e0541..b8bc780 100644
+index 5972ff2..954847e 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
-@@ -321,10 +321,10 @@ Discourse::Application.routes.draw do
-   get "t/:topic_id/wordpress" => "topics#wordpress", constraints: {topic_id: /\d+/}
-   get "t/:slug/:topic_id/summary" => "topics#show", defaults: {summary: true}, constraints: {topic_id: /\d+/, post_number: /\d+/}
-   get "t/:topic_id/summary" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
--  put "t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
--  put "t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
-+  put "*t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
-+  put "*t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
-   put "t/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
--  put "t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
-+  put "*t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
-   put "t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
-   put "t/:topic_id/clear-pin" => "topics#clear_pin", constraints: {topic_id: /\d+/}
-   put "t/:topic_id/re-pin" => "topics#re_pin", constraints: {topic_id: /\d+/}
-@@ -335,11 +335,11 @@ Discourse::Application.routes.draw do
-   put "t/:topic_id/recover" => "topics#recover", constraints: {topic_id: /\d+/}
+@@ -345,10 +345,10 @@ Discourse::Application.routes.draw do
    get "t/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
    get "t/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
--  get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
+   get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
 -  get "t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
 -  get "t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
 -  get "t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
 -  get "t/:topic_id/posts" => "topics#posts", constraints: {topic_id: /\d+/}
-+  get "*t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
 +  get "*t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
 +  get "*t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
 +  get "*t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
@@ -87,10 +71,10 @@ index 98e0541..b8bc780 100644
    post "t/:topic_id/invite" => "topics#invite", constraints: {topic_id: /\d+/}
    post "t/:topic_id/move-posts" => "topics#move_posts", constraints: {topic_id: /\d+/}
 diff --git a/config/site_settings.yml b/config/site_settings.yml
-index f99260c..0ae9e61 100644
+index 77e2f7c..31fd721 100644
 --- a/config/site_settings.yml
 +++ b/config/site_settings.yml
-@@ -523,6 +523,11 @@ uncategorized:
+@@ -527,6 +527,11 @@ uncategorized:
    sequential_replies_threshold: 2
    dominating_topic_minimum_percent: 20
  
@@ -103,5 +87,5 @@ index f99260c..0ae9e61 100644
      default: ""
      client: true
 -- 
-1.8.5.2 (Apple Git-48)
+1.8.3.4 (Apple Git-47)
 

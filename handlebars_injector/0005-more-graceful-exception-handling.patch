@@ -1,7 +1,7 @@
-From 390f74a146018fedfb6a72cf247edf019316b536 Mon Sep 17 00:00:00 2001
+From fe94b4993bd0a17d2ef50d3dbb39bc5b7deb86f1 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Tue, 20 May 2014 11:38:31 +0200
-Subject: [PATCH 5/5] more graceful exception handling
+Subject: [PATCH 5/6] more graceful exception handling
 
 ---
  app/assets/javascripts/ember-handlebars-injector.js | 6 +++++-
