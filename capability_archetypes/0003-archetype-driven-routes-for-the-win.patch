@@ -1,4 +1,4 @@
-From 1caae4a60f68f4b06b78b9010941de650220e9ce Mon Sep 17 00:00:00 2001
+From 7a2b662c08c07160e1d02b2e8ffbd8f40a595930 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
@@ -12,13 +12,13 @@ Subject: [PATCH 3/3] archetype driven routes for the win
  .../javascripts/discourse/models/nav_item.js       |  8 ++-
  .../discourse/routes/application_routes.js         | 32 ++++++++-
  .../discourse/routes/discovery_categories_route.js | 10 ++-
- .../discourse/routes/discovery_route_builders.js   | 55 +++++++++++-----
+ .../discourse/routes/discovery_route_builders.js   | 57 ++++++++++------
  app/controllers/list_controller.rb                 |  1 +
  app/serializers/archetype_serializer.rb            |  2 +-
  config/routes.rb                                   | 76 ++++++++++++++--------
  lib/archetype.rb                                   |  1 -
  lib/topic_query.rb                                 |  5 ++
- 14 files changed, 174 insertions(+), 62 deletions(-)
+ 14 files changed, 175 insertions(+), 63 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/controllers/navigation/category.js.es6 b/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
 index 29596b8..1838c2b 100644
@@ -89,7 +89,7 @@ index cfbc88c..85d2238 100644
 +
  
 diff --git a/app/assets/javascripts/discourse/models/category.js b/app/assets/javascripts/discourse/models/category.js
-index 369a8e1..bb2ca47 100644
+index 369a8e1..4270bc7 100644
 --- a/app/assets/javascripts/discourse/models/category.js
 +++ b/app/assets/javascripts/discourse/models/category.js
 @@ -32,8 +32,8 @@ Discourse.Category = Discourse.Model.extend({
@@ -125,7 +125,7 @@ index 369a8e1..bb2ca47 100644
  
 +  setArchetype: function(archetype) {
 +    Discourse.Category.list().forEach(function(cat) {
-+      cat.set("archetype", archetype)
++      cat.set("archetype", archetype);
 +    });
 +  },
 +
@@ -167,7 +167,7 @@ index 33986b1..a21cdb6 100644
    },
  
 diff --git a/app/assets/javascripts/discourse/routes/application_routes.js b/app/assets/javascripts/discourse/routes/application_routes.js
-index 461cd2a..0d96b1e 100644
+index 461cd2a..dedcae8 100644
 --- a/app/assets/javascripts/discourse/routes/application_routes.js
 +++ b/app/assets/javascripts/discourse/routes/application_routes.js
 @@ -19,8 +19,8 @@ Discourse.Route.buildRoutes(function() {
@@ -197,8 +197,8 @@ index 461cd2a..0d96b1e 100644
 +    if (name.indexOf("Discovery") === 0) discoveryRoutes.push(name.slice(9));
 +  }
 +
-+  for (var name in Ember.TEMPLATES) {
-+    if (name.indexOf("discovery") === 0) discoveryTemplates.push(name.slice(9));
++  for (var tmpl in Ember.TEMPLATES) {
++    if (tmpl.indexOf("discovery") === 0) discoveryTemplates.push(tmpl.slice(9));
 +  }
 +
 +  Discourse.Site.currentProp('archetypes').forEach(function(arch){
@@ -257,7 +257,7 @@ index 82edf29..8172893 100644
    },
  
 diff --git a/app/assets/javascripts/discourse/routes/discovery_route_builders.js b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
-index aa829e3..ee0559f 100644
+index aa829e3..03902d7 100644
 --- a/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 +++ b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 @@ -4,16 +4,18 @@
@@ -270,7 +270,8 @@ index aa829e3..ee0559f 100644
      queryParams: {
        sort: { replace: true },
        ascending: { replace: true },
-       status: { replace: true }
+-      status: { replace: true }
++      status: { replace: true },
 +      archetype: archetype
      },
  
