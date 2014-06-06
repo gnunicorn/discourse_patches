@@ -1,4 +1,4 @@
-From fe94b4993bd0a17d2ef50d3dbb39bc5b7deb86f1 Mon Sep 17 00:00:00 2001
+From b6b716dc94ae26dfaa1c8846b42e95acea391dc9 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Tue, 20 May 2014 11:38:31 +0200
 Subject: [PATCH 5/6] more graceful exception handling

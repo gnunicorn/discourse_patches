@@ -1,4 +1,4 @@
-From 14f3e49a6d3c74f2408a69fbc2096722b956a81b Mon Sep 17 00:00:00 2001
+From 0dced8bd5a8fcf7c5cfd95542e23f74c9c1ae737 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 11 Apr 2014 15:05:03 +0200
 Subject: [PATCH 1/6] template injector plugin infrastructure added
@@ -177,10 +177,10 @@ index 0851f91..c440a5b 100644
  //= require ember_include.js
  
 diff --git a/lib/discourse_plugin_registry.rb b/lib/discourse_plugin_registry.rb
-index 1a32e47..652821c 100644
+index bfb8f67..e40039f 100644
 --- a/lib/discourse_plugin_registry.rb
 +++ b/lib/discourse_plugin_registry.rb
-@@ -42,6 +42,10 @@ class DiscoursePluginRegistry
+@@ -43,6 +43,10 @@ class DiscoursePluginRegistry
        @sass_variables ||= Set.new
      end
  
@@ -191,7 +191,7 @@ index 1a32e47..652821c 100644
      def handlebars
        @handlebars ||= Set.new
      end
-@@ -89,6 +93,10 @@ class DiscoursePluginRegistry
+@@ -90,6 +94,10 @@ class DiscoursePluginRegistry
      self.class.handlebars
    end
  
@@ -202,7 +202,7 @@ index 1a32e47..652821c 100644
    def self.clear
      self.javascripts = nil
      self.server_side_javascripts = nil
-@@ -97,6 +105,7 @@ class DiscoursePluginRegistry
+@@ -98,6 +106,7 @@ class DiscoursePluginRegistry
      self.desktop_stylesheets = nil
      self.sass_variables = nil
      self.handlebars = nil
@@ -211,10 +211,10 @@ index 1a32e47..652821c 100644
  
    def self.setup(plugin_class)
 diff --git a/lib/plugin/instance.rb b/lib/plugin/instance.rb
-index e8e5ccd..8eee408 100644
+index 88498a5..45b5d66 100644
 --- a/lib/plugin/instance.rb
 +++ b/lib/plugin/instance.rb
-@@ -234,6 +234,8 @@ class Plugin::Instance
+@@ -239,6 +239,8 @@ class Plugin::Instance
        if asset =~ /\.js$|\.js\.erb$|\.js\.es6$/
          if opts == :admin
            DiscoursePluginRegistry.admin_javascripts << asset

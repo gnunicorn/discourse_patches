@@ -1,4 +1,4 @@
-From 6d597cc34f3f47fcae541affbdb367c6c7e66b00 Mon Sep 17 00:00:00 2001
+From afda712906f1dedbee5d2ed891c8708ee83819c0 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Wed, 14 May 2014 17:48:10 +0200
 Subject: [PATCH 3/6] missing attribute accessor added
@@ -8,7 +8,7 @@ Subject: [PATCH 3/6] missing attribute accessor added
  1 file changed, 1 insertion(+)
 
 diff --git a/lib/discourse_plugin_registry.rb b/lib/discourse_plugin_registry.rb
-index 652821c..d2efe82 100644
+index e40039f..4ac0101 100644
 --- a/lib/discourse_plugin_registry.rb
 +++ b/lib/discourse_plugin_registry.rb
 @@ -11,6 +11,7 @@ class DiscoursePluginRegistry
@@ -17,8 +17,8 @@ index 652821c..d2efe82 100644
      attr_accessor :sass_variables
 +    attr_accessor :template_injectors
      attr_accessor :handlebars
+     attr_accessor :custom_html
  
-     # Default accessor values
 -- 
 1.8.3.4 (Apple Git-47)
 

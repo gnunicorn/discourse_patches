@@ -1,4 +1,4 @@
-From 1d6067a9d25ae0f7a009d1ebab59308e7436e4dd Mon Sep 17 00:00:00 2001
+From f57617732f3d42571986f2d83fcb9c02ffb544fe Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Mon, 2 Jun 2014 15:33:40 +0200
 Subject: [PATCH 6/6] remember whether functions have been called for easier

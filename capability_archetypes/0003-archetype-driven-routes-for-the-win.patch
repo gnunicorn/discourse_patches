@@ -1,4 +1,4 @@
-From 7a2b662c08c07160e1d02b2e8ffbd8f40a595930 Mon Sep 17 00:00:00 2001
+From 3e70c9600a6393b05fd2941d154308ef78ee185e Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
@@ -89,7 +89,7 @@ index cfbc88c..85d2238 100644
 +
  
 diff --git a/app/assets/javascripts/discourse/models/category.js b/app/assets/javascripts/discourse/models/category.js
-index 369a8e1..4270bc7 100644
+index 9687dfb..fa84837 100644
 --- a/app/assets/javascripts/discourse/models/category.js
 +++ b/app/assets/javascripts/discourse/models/category.js
 @@ -32,8 +32,8 @@ Discourse.Category = Discourse.Model.extend({
@@ -119,7 +119,7 @@ index 369a8e1..4270bc7 100644
    addPermission: function(permission){
      this.get("permissions").addObject(permission);
      this.get("availableGroups").removeObject(permission.group_name);
-@@ -232,6 +241,12 @@ Discourse.Category.reopenClass({
+@@ -228,6 +237,12 @@ Discourse.Category.reopenClass({
      return Discourse.Category.list().findBy('id', id);
    },
  
@@ -370,11 +370,11 @@ index aa829e3..03902d7 100644
    });
  }, true);
 diff --git a/app/controllers/list_controller.rb b/app/controllers/list_controller.rb
-index 11adede..f3d32e7 100644
+index 91f653f..22e07bd 100644
 --- a/app/controllers/list_controller.rb
 +++ b/app/controllers/list_controller.rb
-@@ -269,6 +269,7 @@ class ListController < ApplicationController
-       ascending: params[:ascending],
+@@ -271,6 +271,7 @@ class ListController < ApplicationController
+       max_posts: params[:max_posts],
        status: params[:status]
      }
 +    options[:archetype] = params[:archetype] if params[:archetype].present?
@@ -395,7 +395,7 @@ index 8d6cc41..94d33f4 100644
        object.id
      end
 diff --git a/config/routes.rb b/config/routes.rb
-index 5972ff2..7d62d96 100644
+index d75b6f5..66bc73a 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
 @@ -272,37 +272,57 @@ Discourse::Application.routes.draw do
@@ -497,10 +497,10 @@ index 6e7b40d..c5c16a3 100644
        end
      end
 diff --git a/lib/topic_query.rb b/lib/topic_query.rb
-index 318c53d..0469831 100644
+index 2456c99..298c5bf 100644
 --- a/lib/topic_query.rb
 +++ b/lib/topic_query.rb
-@@ -18,6 +18,7 @@ class TopicQuery
+@@ -20,6 +20,7 @@ class TopicQuery
                       category
                       order
                       ascending
@@ -508,7 +508,7 @@ index 318c53d..0469831 100644
                       no_subcategories
                       no_definitions
                       status).map(&:to_sym)
-@@ -222,6 +223,10 @@ class TopicQuery
+@@ -224,6 +225,10 @@ class TopicQuery
                         .references('tu')
        end
  
