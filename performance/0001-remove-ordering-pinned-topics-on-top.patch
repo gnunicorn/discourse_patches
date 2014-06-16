@@ -1,0 +1,25 @@
+From a17333a4600cf64cb9e8dd49d9bd1c30ae785941 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Mon, 16 Jun 2014 15:25:09 +0200
+Subject: [PATCH] remove pinned topics on top for performance
+
+---
+ lib/topic_query.rb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/topic_query.rb b/lib/topic_query.rb
+index 2456c99..680ce3c 100644
+--- a/lib/topic_query.rb
++++ b/lib/topic_query.rb
+@@ -197,7 +197,7 @@ class TopicQuery
+           # to the top, do nothing
+           return result if options[:unordered]
+           # Otherwise apply our default ordering
+-          return default_ordering(result, options)
++          #return default_ordering(result, options)
+         end
+         sort_column = 'bumped_at'
+       end
+-- 
+1.8.5.2 (Apple Git-48)
+
