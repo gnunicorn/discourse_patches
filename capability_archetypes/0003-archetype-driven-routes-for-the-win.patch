@@ -1,4 +1,4 @@
-From 3e70c9600a6393b05fd2941d154308ef78ee185e Mon Sep 17 00:00:00 2001
+From 8ffc044554531a154dc87549cbb5dbbf4b83fc0b Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
@@ -17,8 +17,8 @@ Subject: [PATCH 3/3] archetype driven routes for the win
  app/serializers/archetype_serializer.rb            |  2 +-
  config/routes.rb                                   | 76 ++++++++++++++--------
  lib/archetype.rb                                   |  1 -
- lib/topic_query.rb                                 |  5 ++
- 14 files changed, 175 insertions(+), 63 deletions(-)
+ lib/topic_query.rb                                 | 25 +++++--
+ 14 files changed, 189 insertions(+), 69 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/controllers/navigation/category.js.es6 b/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
 index 29596b8..1838c2b 100644
@@ -395,7 +395,7 @@ index 8d6cc41..94d33f4 100644
        object.id
      end
 diff --git a/config/routes.rb b/config/routes.rb
-index d75b6f5..66bc73a 100644
+index b26263e..7c5c62c 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
 @@ -272,37 +272,57 @@ Discourse::Application.routes.draw do
@@ -497,7 +497,7 @@ index 6e7b40d..c5c16a3 100644
        end
      end
 diff --git a/lib/topic_query.rb b/lib/topic_query.rb
-index 2456c99..298c5bf 100644
+index 6ee9362..b454aca 100644
 --- a/lib/topic_query.rb
 +++ b/lib/topic_query.rb
 @@ -20,6 +20,7 @@ class TopicQuery
@@ -508,17 +508,41 @@ index 2456c99..298c5bf 100644
                       no_subcategories
                       no_definitions
                       status).map(&:to_sym)
-@@ -224,6 +225,10 @@ class TopicQuery
+@@ -231,16 +232,28 @@ class TopicQuery
                         .references('tu')
+       end
+ 
+-      category_id = get_category_id(options[:category])
+-      if category_id
+-        if options[:no_subcategories]
+-          result = result.where('categories.id = ?', category_id)
+-        else
+-          result = result.where('categories.id = ? or categories.parent_category_id = ?', category_id, category_id)
++
++      category_id = nil
++      if options[:category].present?
++        category_id  = options[:category].to_i
++        category_id = Category.where(slug: options[:category]).pluck(:id).first if category_id == 0
++
++        if category_id
++          if options[:no_subcategories]
++            result = result.where('categories.id = ?', category_id)
++          else
++            result = result.where('categories.id = ? or categories.parent_category_id = ?', category_id, category_id)
++          end
++          result = result.references(:categories)
+         end
+         result = result.references(:categories)
        end
  
 +      if options[:archetype].present?
 +        result = result.where('topics.archetype = ?', options[:archetype])
 +      end
 +
-       category_id = nil
-       if options[:category].present?
-         category_id  = options[:category].to_i
++
+       result = apply_ordering(result, options)
+       result = result.listable_topics.includes(category: :topic_only_relative_url)
+       result = result.where('categories.name is null or categories.name <> ?', options[:exclude_category]).references(:categories) if options[:exclude_category]
 -- 
 1.8.3.4 (Apple Git-47)
 
