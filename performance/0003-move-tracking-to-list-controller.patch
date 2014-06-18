@@ -1,7 +1,7 @@
-From 1961ddc2a8b40dc51620bce7ea91fca96129ffdf Mon Sep 17 00:00:00 2001
+From 39fb08556877bc0f85b9ced3543ee85f1d8ba18d Mon Sep 17 00:00:00 2001
 From: Piioo <Piotr.Szal@googlemail.com>
-Date: Wed, 18 Jun 2014 17:23:48 +0200
-Subject: [PATCH] moved topic tracking into the list_controller
+Date: Wed, 18 Jun 2014 17:29:45 +0200
+Subject: [PATCH] moved tracking to list controller
 
 ---
  app/controllers/application_controller.rb | 2 --
