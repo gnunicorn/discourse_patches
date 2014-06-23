@@ -1,4 +1,4 @@
-From 8ffc044554531a154dc87549cbb5dbbf4b83fc0b Mon Sep 17 00:00:00 2001
+From 1c71cb3f7ab48ceea282ee653685cf29150f0097 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
@@ -12,13 +12,13 @@ Subject: [PATCH 3/3] archetype driven routes for the win
  .../javascripts/discourse/models/nav_item.js       |  8 ++-
  .../discourse/routes/application_routes.js         | 32 ++++++++-
  .../discourse/routes/discovery_categories_route.js | 10 ++-
- .../discourse/routes/discovery_route_builders.js   | 57 ++++++++++------
+ .../discourse/routes/discovery_route_builders.js   | 59 +++++++++++------
  app/controllers/list_controller.rb                 |  1 +
  app/serializers/archetype_serializer.rb            |  2 +-
  config/routes.rb                                   | 76 ++++++++++++++--------
  lib/archetype.rb                                   |  1 -
  lib/topic_query.rb                                 | 25 +++++--
- 14 files changed, 189 insertions(+), 69 deletions(-)
+ 14 files changed, 190 insertions(+), 70 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/controllers/navigation/category.js.es6 b/app/assets/javascripts/discourse/controllers/navigation/category.js.es6
 index 29596b8..1838c2b 100644
@@ -60,7 +60,7 @@ index 84824c8..caee951 100644
 +  }.property('archetype')
  });
 diff --git a/app/assets/javascripts/discourse/lib/html.js b/app/assets/javascripts/discourse/lib/html.js
-index d3fbff5..43b1d20 100644
+index 4ca0e16..36d6da9 100644
 --- a/app/assets/javascripts/discourse/lib/html.js
 +++ b/app/assets/javascripts/discourse/lib/html.js
 @@ -86,7 +86,8 @@ Discourse.HTML = {
@@ -72,7 +72,7 @@ index d3fbff5..43b1d20 100644
 +        url = Discourse.getURL(prefix + "/category/") + Discourse.Category.slugFor(category),
          elem = (opts.link === false ? 'span' : 'a'),
          extraClasses = (opts.extraClasses ? (' ' + opts.extraClasses) : ''),
-         html = "<" + elem + " href=\"" + (opts.link === false ? '' : url) + "\" ";
+         html = "<" + elem + " href=\"" + (opts.link === false ? '' : url) + "\" ",
 diff --git a/app/assets/javascripts/discourse/models/archetype.js b/app/assets/javascripts/discourse/models/archetype.js
 index cfbc88c..85d2238 100644
 --- a/app/assets/javascripts/discourse/models/archetype.js
@@ -167,7 +167,7 @@ index 33986b1..a21cdb6 100644
    },
  
 diff --git a/app/assets/javascripts/discourse/routes/application_routes.js b/app/assets/javascripts/discourse/routes/application_routes.js
-index 461cd2a..dedcae8 100644
+index 813528d..b180c23 100644
 --- a/app/assets/javascripts/discourse/routes/application_routes.js
 +++ b/app/assets/javascripts/discourse/routes/application_routes.js
 @@ -19,8 +19,8 @@ Discourse.Route.buildRoutes(function() {
@@ -257,7 +257,7 @@ index 82edf29..8172893 100644
    },
  
 diff --git a/app/assets/javascripts/discourse/routes/discovery_route_builders.js b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
-index aa829e3..03902d7 100644
+index 8e03658..5f6db6c 100644
 --- a/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 +++ b/app/assets/javascripts/discourse/routes/discovery_route_builders.js
 @@ -4,16 +4,18 @@
@@ -316,7 +316,7 @@ index aa829e3..03902d7 100644
      },
  
      afterModel: function(model, transaction) {
-@@ -111,6 +118,8 @@ function buildCategoryRoute(filter, params) {
+@@ -116,6 +123,8 @@ function buildCategoryRoute(filter, params) {
        opts.canEditCategory = Discourse.User.currentProp('staff');
  
        opts.canChangeCategoryNotificationLevel = Discourse.User.current();
@@ -325,11 +325,12 @@ index aa829e3..03902d7 100644
        this.controllerFor('navigation/category').setProperties(opts);
  
        var queryParams = transaction.queryParams;
-@@ -173,20 +182,30 @@ function buildCategoryRoute(filter, params) {
+@@ -178,21 +187,31 @@ function buildCategoryRoute(filter, params) {
  
  // Finally, build all the routes with the helpers we created
  Discourse.addInitializer(function() {
 -  Discourse.DiscoveryCategoryRoute = buildCategoryRoute('latest');
+-  Discourse.DiscoveryParentCategoryRoute = buildCategoryRoute('latest');
 -  Discourse.DiscoveryCategoryNoneRoute = buildCategoryRoute('latest', {no_subcategories: true});
 -
 -  Discourse.Site.currentProp('filters').forEach(function(filter) {
@@ -339,6 +340,7 @@ index aa829e3..03902d7 100644
 -    Discourse["Discovery" + filter.capitalize() + "CategoryNoneRoute"] = buildCategoryRoute(filter, {no_subcategories: true});
 +  var builder =( function(prefix, archetype){
 +    Discourse[prefix + "CategoryRoute"] = buildCategoryRoute('latest', {archetype: archetype});
++    Discourse[prefix + "ParentCategoryRoute"] = buildCategoryRoute('latest', {archetype: archetype});
 +    Discourse[prefix + "CategoryNoneRoute"] = buildCategoryRoute('latest', {no_subcategories: true, archetype: archetype});
 +
 +    Discourse.Site.currentProp('filters').forEach(function(filter) {
@@ -395,10 +397,10 @@ index 8d6cc41..94d33f4 100644
        object.id
      end
 diff --git a/config/routes.rb b/config/routes.rb
-index b26263e..7c5c62c 100644
+index e3278f4..89739b8 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
-@@ -272,37 +272,57 @@ Discourse::Application.routes.draw do
+@@ -273,37 +273,57 @@ Discourse::Application.routes.draw do
    # We've renamed popular to latest. If people access it we want a permanent redirect.
    get "popular" => "list#popular_redirect"
  
@@ -485,10 +487,10 @@ index b26263e..7c5c62c 100644
  
    get "search" => "search#query"
 diff --git a/lib/archetype.rb b/lib/archetype.rb
-index 6e7b40d..c5c16a3 100644
+index dbd4466..3d2da7b 100644
 --- a/lib/archetype.rb
 +++ b/lib/archetype.rb
-@@ -55,7 +55,6 @@ class Archetype
+@@ -60,7 +60,6 @@ class Archetype
      @archetypes[name] = archetype
      if archetype.options.has_key? :capabilities
        archetype.options[:capabilities].each do |cap|
