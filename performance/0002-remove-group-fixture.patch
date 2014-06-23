@@ -1,0 +1,19 @@
+From 57f24c89e20d77fadd2fa830f6074b65f26b2d7c Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Wed, 18 Jun 2014 16:55:34 +0200
+Subject: [PATCH] remove group fixture
+
+---
+ db/fixtures/002_groups.rb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/db/fixtures/002_groups.rb b/db/fixtures/002_groups.rb
+index 20e0152..4ad8a61 100644
+--- a/db/fixtures/002_groups.rb
++++ b/db/fixtures/002_groups.rb
+@@ -1 +1 @@
+-Group.ensure_automatic_groups!
++#Group.ensure_automatic_groups!
+-- 
+1.8.5.2 (Apple Git-48)
+

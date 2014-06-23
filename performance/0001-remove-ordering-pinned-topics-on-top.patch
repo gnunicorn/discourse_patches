@@ -1,14 +1,14 @@
-From a17333a4600cf64cb9e8dd49d9bd1c30ae785941 Mon Sep 17 00:00:00 2001
+From 40864d879658c8ce728e7757282a4be8dff98b85 Mon Sep 17 00:00:00 2001
 From: Piioo <Piotr.Szal@googlemail.com>
 Date: Mon, 16 Jun 2014 15:25:09 +0200
-Subject: [PATCH] remove pinned topics on top for performance
+Subject: [PATCH 1/2] remove pinned topics on top for performance
 
 ---
  lib/topic_query.rb | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib/topic_query.rb b/lib/topic_query.rb
-index 2456c99..680ce3c 100644
+index 6ee9362..31b8cba 100644
 --- a/lib/topic_query.rb
 +++ b/lib/topic_query.rb
 @@ -197,7 +197,7 @@ class TopicQuery
@@ -20,6 +20,31 @@ index 2456c99..680ce3c 100644
          end
          sort_column = 'bumped_at'
        end
+-- 
+1.8.5.2 (Apple Git-48)
+
+
+From 6fcb52cff2633b7945ff7f6151c13b5e2b9a0f31 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Fri, 20 Jun 2014 10:12:10 +0200
+Subject: [PATCH 2/2] remove pinned order in new topic list
+
+---
+ lib/topic_query.rb | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/lib/topic_query.rb b/lib/topic_query.rb
+index 31b8cba..77d69d5 100644
+--- a/lib/topic_query.rb
++++ b/lib/topic_query.rb
+@@ -346,6 +346,6 @@ class TopicQuery
+         result = result.order("CASE WHEN topics.category_id = #{options[:topic].category_id.to_i} THEN 0 ELSE 1 END")
+       end
+ 
+-      result.order(TopicQuerySQL.order_nocategory_with_pinned_sql)
++      result #.order(TopicQuerySQL.order_nocategory_with_pinned_sql)
+     end
+ end
 -- 
 1.8.5.2 (Apple Git-48)
 
