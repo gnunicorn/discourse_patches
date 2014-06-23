@@ -1,0 +1,65 @@
+From cf43b3f79698f788ced7cbbf4f6009548599ee18 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Mon, 23 Jun 2014 14:38:06 +0200
+Subject: [PATCH] cache count on top_topic
+
+---
+ app/controllers/list_controller.rb |  7 ++-----
+ app/models/top_topic.rb            | 23 +++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 5 deletions(-)
+
+diff --git a/app/controllers/list_controller.rb b/app/controllers/list_controller.rb
+index 91f653f..36b311c 100644
+--- a/app/controllers/list_controller.rb
++++ b/app/controllers/list_controller.rb
+@@ -328,11 +328,8 @@ class ListController < ApplicationController
+ 
+   def self.best_period_for(previous_visit_at, category_id=nil)
+     best_periods_for(previous_visit_at).each do |period|
+-      top_topics = TopTopic.where("#{period}_score > 0")
+-      if category_id
+-        top_topics = top_topics.joins(:topic).where("topics.category_id = ?", category_id)
+-      end
+-      return period if top_topics.count >= SiteSetting.topics_per_period_in_top_page
++      top_topics_count = TopTopic.count_cache_for_period(period, category_id)
++      return period if top_topics_count >= SiteSetting.topics_per_period_in_top_page
+     end
+     # default period is yearly
+     :yearly
+diff --git a/app/models/top_topic.rb b/app/models/top_topic.rb
+index 352677a..319f834 100644
+--- a/app/models/top_topic.rb
++++ b/app/models/top_topic.rb
+@@ -136,6 +136,29 @@ class TopTopic < ActiveRecord::Base
+               from: start_of(period))
+   end
+ 
++  def self.count_cache_for_period(period, category_id=nil)
++
++    if category_id
++      top_topics_count = $redis.get("topic_top_#{period}_for_#{category_id}")
++    else
++      top_topics_count = $redis.get("topic_top_#{period}")
++    end
++
++    if top_topics_count.blank?
++      top_topics = TopTopic.where("#{period}_score > 0")
++      top_topics = top_topics.joins(:topic).where("topics.category_id = ?", category_id) if category_id
++
++      top_topics_count = top_topics.count
++    end
++
++    if category_id
++      $redis.setex("topic_top_#{period}_for_#{category_id}", 5.minutes, top_topics_count.to_s)
++    else
++      $redis.setex("topic_top_#{period}", 5.minutes, top_topics_count.to_s)
++    end
++    top_topics_count.to_i
++  end
++
+ end
+ 
+ # == Schema Information
+-- 
+1.8.5.2 (Apple Git-48)
+
