@@ -1,4 +1,4 @@
-From 0eb8f17a96ec0b5eede965bc660ee5ff6c1d056d Mon Sep 17 00:00:00 2001
+From c35327bca694d10b0f0ab0ee8070cd6cbff69f2a Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 28 Mar 2014 17:47:19 +0100
 Subject: [PATCH 1/3] switch archetypes to a capability-driven approach for
@@ -170,7 +170,7 @@ index 9a3c59a..af10bd7 100644
  
      unless guardian.is_admin?
 diff --git a/lib/archetype.rb b/lib/archetype.rb
-index 7213c8b..dbd4466 100644
+index 7213c8b..c6e87e1 100644
 --- a/lib/archetype.rb
 +++ b/lib/archetype.rb
 @@ -3,9 +3,9 @@ class Archetype
@@ -185,11 +185,10 @@ index 7213c8b..dbd4466 100644
    end
  
    def attributes
-@@ -25,6 +25,18 @@ class Archetype
- 
-   def self.banner
+@@ -27,19 +27,97 @@ class Archetype
      'banner'
-+
+   end
+ 
 +  def self.capable(cap)
 +    @capabilities[cap] || []
 +  end
@@ -201,10 +200,10 @@ index 7213c8b..dbd4466 100644
 +
 +  def self.is_capable?(name, cap)
 +    return capable(cap).include? name
-   end
- 
++  end
++
    def self.list
-@@ -32,14 +44,80 @@ class Archetype
+     return [] unless @archetypes.present?
      @archetypes.values
    end
  
@@ -242,7 +241,6 @@ index 7213c8b..dbd4466 100644
 +  # By default we have a regular archetype
 +  register 'regular', capabilities: [:searchable, :shown_publicly, :linkable]
 +  register 'banner', capabilities: [:shown_publicly]
-+
  
  end
 +

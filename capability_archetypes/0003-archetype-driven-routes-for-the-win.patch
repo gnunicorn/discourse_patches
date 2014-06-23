@@ -1,4 +1,4 @@
-From 1c71cb3f7ab48ceea282ee653685cf29150f0097 Mon Sep 17 00:00:00 2001
+From 44acf28362165d3cfba34e884d9c4a09e05ee694 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
 Subject: [PATCH 3/3] archetype driven routes for the win
@@ -487,10 +487,10 @@ index e3278f4..89739b8 100644
  
    get "search" => "search#query"
 diff --git a/lib/archetype.rb b/lib/archetype.rb
-index dbd4466..3d2da7b 100644
+index c6e87e1..66acca4 100644
 --- a/lib/archetype.rb
 +++ b/lib/archetype.rb
-@@ -60,7 +60,6 @@ class Archetype
+@@ -61,7 +61,6 @@ class Archetype
      @archetypes[name] = archetype
      if archetype.options.has_key? :capabilities
        archetype.options[:capabilities].each do |cap|
