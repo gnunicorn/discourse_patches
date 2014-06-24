@@ -1,0 +1,27 @@
+From cdddfc76e6bd5fc690d4cee153ef03dd7d38b351 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Tue, 24 Jun 2014 16:39:08 +0200
+Subject: [PATCH] jump always to first post
+
+---
+ app/assets/javascripts/discourse/models/topic.js | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/models/topic.js b/app/assets/javascripts/discourse/models/topic.js
+index 196bfb7..0cbd31c 100644
+--- a/app/assets/javascripts/discourse/models/topic.js
++++ b/app/assets/javascripts/discourse/models/topic.js
+@@ -80,8 +80,8 @@ Discourse.Topic = Discourse.Model.extend({
+   }.property('url', 'last_read_post_number'),
+ 
+   lastUnreadUrl: function() {
+-    var postNumber = Math.min(this.get('last_read_post_number') + 1, this.get('highest_post_number'));
+-    return this.urlForPostNumber(postNumber);
++    //var postNumber = Math.min(this.get('last_read_post_number') + 1, this.get('highest_post_number'));
++    return this.urlForPostNumber(1);
+   }.property('url', 'last_read_post_number', 'highest_post_number'),
+ 
+   lastPostUrl: function() {
+-- 
+1.8.5.2 (Apple Git-48)
+
