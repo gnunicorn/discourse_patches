@@ -1,14 +1,14 @@
-From d62c1d3df1ac94ead3fe254ef7207b6b33344e5f Mon Sep 17 00:00:00 2001
+From d84f0df1448c6b77bf9797f5925c4f4ef9e34de2 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Wed, 14 May 2014 20:48:32 +0200
-Subject: [PATCH 1/2] add support for customizable urls with filler
+Subject: [PATCH] add support for customizable urls with filler
 
 ---
- app/assets/javascripts/discourse/models/topic.js          | 15 ++++++++++++++-
- .../javascripts/discourse/routes/application_routes.js    |  2 +-
- config/routes.rb                                          |  8 ++++----
- config/site_settings.yml                                  |  5 +++++
- 4 files changed, 24 insertions(+), 6 deletions(-)
+ app/assets/javascripts/discourse/models/topic.js         | 15 ++++++++++++++-
+ .../javascripts/discourse/routes/application_routes.js   |  2 +-
+ config/routes.rb                                         | 16 ++++++++--------
+ config/site_settings.yml                                 |  5 +++++
+ 4 files changed, 28 insertions(+), 10 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/models/topic.js b/app/assets/javascripts/discourse/models/topic.js
 index 7a309f3..196bfb7 100644
@@ -52,10 +52,24 @@ index 813528d..95edd9a 100644
      this.route('fromParamsNear', { path: '/:nearPost' });
    });
 diff --git a/config/routes.rb b/config/routes.rb
-index e3278f4..86eab8e 100644
+index e3278f4..29805de 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
-@@ -348,10 +348,10 @@ Discourse::Application.routes.draw do
+@@ -331,11 +331,9 @@ Discourse::Application.routes.draw do
+   get "t/:topic_id/wordpress" => "topics#wordpress", constraints: {topic_id: /\d+/}
+   get "t/:slug/:topic_id/summary" => "topics#show", defaults: {summary: true}, constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "t/:topic_id/summary" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+-  put "t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
+-  put "t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+-  put "t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+-  put "t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
++  put "*t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/clear-pin" => "topics#clear_pin", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/re-pin" => "topics#re_pin", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/mute" => "topics#mute", constraints: {topic_id: /\d+/}
+@@ -348,10 +346,12 @@ Discourse::Application.routes.draw do
    get "t/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
    get "t/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
    get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
@@ -63,6 +77,8 @@ index e3278f4..86eab8e 100644
 -  get "t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
 -  get "t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
 -  get "t/:topic_id/posts" => "topics#posts", constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id" => "topics#update", constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
 +  get "*t/:slug/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
 +  get "*t/:slug/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
 +  get "*t/:slug/:topic_id" => "topics#show", constraints: {topic_id: /\d+/}
