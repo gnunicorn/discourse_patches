@@ -1,0 +1,27 @@
+From bdee64114dd0c217eed1213f67ef9bb56e08b322 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Tue, 24 Jun 2014 12:49:11 +0200
+Subject: [PATCH] changed routes
+
+---
+ config/routes.rb | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/config/routes.rb b/config/routes.rb
+index eaaa0cf..297ccd0 100644
+--- a/config/routes.rb
++++ b/config/routes.rb
+@@ -352,8 +352,8 @@ Discourse::Application.routes.draw do
+   get "t/:slug/:topic_id/summary" => "topics#show", defaults: {summary: true}, constraints: {topic_id: /\d+/, post_number: /\d+/}
+   get "t/:topic_id/summary" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
+   put "t/:topic_id/star" => "topics#star", constraints: {topic_id: /\d+/}
+-  put "t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+-  put "t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
++  put "*t/:slug/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
++  put "*t/:topic_id/status" => "topics#status", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/clear-pin" => "topics#clear_pin", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/re-pin" => "topics#re_pin", constraints: {topic_id: /\d+/}
+   put "t/:topic_id/mute" => "topics#mute", constraints: {topic_id: /\d+/}
+-- 
+1.8.5.2 (Apple Git-48)
+
