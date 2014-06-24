@@ -1,0 +1,45 @@
+From 4778ef70176892b33dbadfc1e5ecb3220b933472 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Tue, 24 Jun 2014 12:34:26 +0200
+Subject: [PATCH] performance_banner
+
+---
+ app/controllers/application_controller.rb | 8 +++++++-
+ app/models/topic.rb                       | 2 ++
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/app/controllers/application_controller.rb b/app/controllers/application_controller.rb
+index f594fe0..af4bb76 100644
+--- a/app/controllers/application_controller.rb
++++ b/app/controllers/application_controller.rb
+@@ -268,7 +268,13 @@ class ApplicationController < ActionController::Base
+     end
+ 
+     def banner_json
+-      topic = Topic.where(archetype: Archetype.banner).limit(1).first
++      banner_id = $redis.get('banner_id')
++      if banner_id
++        topic = Topic.find(banner_id) unless banner_id.blank?
++      else
++        topic = Topic.where(archetype: Archetype.banner).limit(1).first
++        $redis.set('banner_id', topic.try(:id))
++      end
+       banner = topic.present? ? topic.banner : {}
+ 
+       MultiJson.dump(banner)
+diff --git a/app/models/topic.rb b/app/models/topic.rb
+index dfc9b12..b02fd0f 100644
+--- a/app/models/topic.rb
++++ b/app/models/topic.rb
+@@ -640,6 +640,8 @@ class Topic < ActiveRecord::Base
+     self.add_moderator_post(user, I18n.t("archetypes.banner.message.make"))
+     self.save
+ 
++    $redis.set("banner_id", self.id)
++
+     MessageBus.publish('/site/banner', banner)
+   end
+ 
+-- 
+1.8.5.2 (Apple Git-48)
+
