@@ -1,0 +1,60 @@
+From 97bf03f84ea33b1640cc2d1a8a5c3db0fbd2030b Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Thu, 26 Jun 2014 15:27:32 +0200
+Subject: [PATCH 4/6] archetype driven templates
+
+---
+ app/assets/javascripts/discourse/views/post_view.js  | 11 ++++++++++-
+ app/assets/javascripts/discourse/views/topic_view.js | 14 +++++++++++++-
+ 2 files changed, 23 insertions(+), 2 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/views/post_view.js b/app/assets/javascripts/discourse/views/post_view.js
+index 3841931..2f35c57 100644
+--- a/app/assets/javascripts/discourse/views/post_view.js
++++ b/app/assets/javascripts/discourse/views/post_view.js
+@@ -8,7 +8,16 @@
+ **/
+ Discourse.PostView = Discourse.GroupedView.extend(Ember.Evented, {
+   classNames: ['topic-post', 'clearfix'],
+-  templateName: 'post',
++  templateName: function() {
++    var templateName = 'post';
++    if (this.get("post.topic.archetype") !== "regular"){
++      var archTmpl = this.get("post.topic.archetype") + "_post";
++      if (this.templateForName(archTmpl, 'template')) {
++        templateName = archTmpl;
++      };
++    }
++    return templateName;
++  }.property("post.topic.archetype"),
+   classNameBindings: ['postTypeClass',
+                       'selected',
+                       'post.hidden:post-hidden',
+diff --git a/app/assets/javascripts/discourse/views/topic_view.js b/app/assets/javascripts/discourse/views/topic_view.js
+index 593d29a..4baeebb 100644
+--- a/app/assets/javascripts/discourse/views/topic_view.js
++++ b/app/assets/javascripts/discourse/views/topic_view.js
+@@ -10,7 +10,19 @@
+   @module Discourse
+ **/
+ Discourse.TopicView = Discourse.View.extend(Discourse.Scrolling, {
+-  templateName: 'topic',
++  // templateName: 'topic',
++
++  templateName: function() {
++    var templateName = 'topic';
++    if (this.get('controller.model.archetype') !== "regular"){
++      var archTmpl = this.get('controller.model.archetype') + "_topic";
++      if (this.templateForName(archTmpl, 'template')) {
++        templateName = archTmpl;
++      };
++    }
++    return templateName;
++  }.property('controller.model.archetype'),
++
+   topicBinding: 'controller.model',
+   userFiltersBinding: 'controller.userFilters',
+   classNameBindings: ['controller.multiSelect:multi-select',
+-- 
+1.8.3.4 (Apple Git-47)
+

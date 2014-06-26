@@ -1,7 +1,7 @@
 From 44acf28362165d3cfba34e884d9c4a09e05ee694 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:57 +0200
-Subject: [PATCH 3/3] archetype driven routes for the win
+Subject: [PATCH 3/6] archetype driven routes for the win
 
 ---
  .../controllers/navigation/category.js.es6         |  8 ++-

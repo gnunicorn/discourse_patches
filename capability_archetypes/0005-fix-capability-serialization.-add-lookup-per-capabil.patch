@@ -1,0 +1,72 @@
+From a7a3175652d9993005cc1b72cc40b41eb463e089 Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Thu, 26 Jun 2014 15:28:39 +0200
+Subject: [PATCH 5/6] fix capability serialization. add lookup per capability
+
+---
+ .../javascripts/discourse/models/archetype.js      |  5 +++++
+ app/serializers/archetype_serializer.rb            | 24 ++++++++++++++--------
+ 2 files changed, 21 insertions(+), 8 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/models/archetype.js b/app/assets/javascripts/discourse/models/archetype.js
+index 85d2238..0fdb585 100644
+--- a/app/assets/javascripts/discourse/models/archetype.js
++++ b/app/assets/javascripts/discourse/models/archetype.js
+@@ -22,6 +22,11 @@ Discourse.Archetype = Discourse.Model.extend({
+ Discourse.Archetype.reopenClass({
+   getSlug: function(id){
+     return Discourse.Site.currentProp("archetypes").findBy("id", id).slug;
++  },
++  getForCapability: function(cap){
++    return Discourse.Site.currentProp("archetypes").filter(function(arch){
++      return arch.capabilities && arch.capabilities.indexOf(cap) != -1;
++    });
+   }
+ });
+ 
+diff --git a/app/serializers/archetype_serializer.rb b/app/serializers/archetype_serializer.rb
+index 94d33f4..fe414b7 100644
+--- a/app/serializers/archetype_serializer.rb
++++ b/app/serializers/archetype_serializer.rb
+@@ -1,22 +1,30 @@
+ class ArchetypeSerializer < ApplicationSerializer
+ 
+-  attributes :id, :name, :slug, :options
++  attributes :id, :name, :capabilities, :slug, :options
+ 
+   def options
+-    object.options.keys.collect do |k|
+-      {
+-        key: k,
+-        title: I18n.t("archetypes.#{object.id}.options.#{k}.title"),
+-        description: I18n.t("archetypes.#{object.id}.options.#{k}.description"),
+-        option_type: object.options[k]
+-      }
++    opts = []
++    object.options.each_pair do |key, value|
++      unless [:capabilities, :archetype].include? key
++        opts << {
++            key: key,
++            title: I18n.t("archetypes.#{object.id}.options.#{key}.title"),
++            description: I18n.t("archetypes.#{object.id}.options.#{key}.description"),
++            option_type: value
++          }
++      end
+     end
++    opts
+   end
+ 
+   def name
+     I18n.t("archetypes.#{object.id}.title")
+   end
+ 
++  def capabilities
++    return object.options[:capabilities]
++  end
++
+   def slug
+     begin
+       SiteSetting.send("archetypes_#{object.id}_slug") || object.id
+-- 
+1.8.3.4 (Apple Git-47)
+

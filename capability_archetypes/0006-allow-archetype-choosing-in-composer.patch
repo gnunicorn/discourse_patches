@@ -1,0 +1,119 @@
+From 2cf0613893725474790f7eb773b4d4aa0107bf7d Mon Sep 17 00:00:00 2001
+From: Benjamin Kampmann <ben.kampmann@gmail.com>
+Date: Thu, 26 Jun 2014 15:29:02 +0200
+Subject: [PATCH 6/6] allow archetype choosing in composer
+
+---
+ .../discourse/controllers/composer.js.es6          | 23 ++++++++++++++++++++++
+ .../discourse/templates/composer.js.handlebars     | 20 ++++++++++++++++++-
+ config/locales/client.en.yml                       |  1 +
+ lib/archetype.rb                                   |  2 +-
+ 4 files changed, 44 insertions(+), 2 deletions(-)
+
+diff --git a/app/assets/javascripts/discourse/controllers/composer.js.es6 b/app/assets/javascripts/discourse/controllers/composer.js.es6
+index c39b58a..00bc677 100644
+--- a/app/assets/javascripts/discourse/controllers/composer.js.es6
++++ b/app/assets/javascripts/discourse/controllers/composer.js.es6
+@@ -14,6 +14,7 @@ export default Discourse.Controller.extend({
+ 
+   showEditReason: false,
+   editReason: null,
++  showArchetypes: false,
+ 
+   _initializeSimilar: function() {
+     this.set('similarTopics', []);
+@@ -25,6 +26,15 @@ export default Discourse.Controller.extend({
+       this.toggle();
+     },
+ 
++    selectArchetype: function(archetypeId){
++      this.set("model.archetypeId", archetypeId);
++      this.set("showArchetypes", false);
++    },
++
++    showArchetypes: function(){
++      this.set("showArchetypes", true);
++    },
++
+     togglePreview: function() {
+       this.get('model').togglePreview();
+     },
+@@ -79,6 +89,19 @@ export default Discourse.Controller.extend({
+     return Discourse.Category.list();
+   }.property(),
+ 
++  currentArchetype: function(){
++    return Discourse.Site.currentProp("archetypes").findBy("id", this.get("model.archetypeId"));
++  }.property("model.archetypeId"),
++
++  archetypes: function(){
++    return Discourse.Archetype.getForCapability("creatible");
++  }.property(),
++
++  canSelectArchetype: function(){
++    console.log(this.get("model.action"), this.get("archetypes"));
++    return this.get("model.action") === "createTopic" && this.get("archetypes").length > 1;
++  }.property("model.action", "archetypes"),
++
+ 
+   toggle: function() {
+     this.closeAutocomplete();
+diff --git a/app/assets/javascripts/discourse/templates/composer.js.handlebars b/app/assets/javascripts/discourse/templates/composer.js.handlebars
+index 7463c2e..7a153c7 100644
+--- a/app/assets/javascripts/discourse/templates/composer.js.handlebars
++++ b/app/assets/javascripts/discourse/templates/composer.js.handlebars
+@@ -12,7 +12,25 @@
+         {{plugin-outlet "composer-open"}}
+ 
+         <div class='reply-to'>
+-          {{{model.actionTitle}}}:
++          {{#if canSelectArchetype}}
++            {{i18n composer.create_selectable}}
++              <a href="" {{action showArchetypes}}>{{currentArchetype.name}}
++                {{#if showArchetypes}}
++                  <span class="fa fa-chevron-up"></span>
++                {{else}}
++                  <span class="fa fa-chevron-down"></span>
++                {{/if}}
++              </a>
++              {{#if showArchetypes}}
++                <ul>
++                  {{#each archetypes}}
++                    <li {{action selectArchetype id}}>{{name}}</li>
++                  {{/each}}
++                </ul>
++              {{/if}}
++          {{else}}
++            {{{model.actionTitle}}}:
++          {{/if}}
+           {{#if canEdit}}
+             {{#if showEditReason}}
+               <div class="edit-reason-input">
+diff --git a/config/locales/client.en.yml b/config/locales/client.en.yml
+index 76693c3..960d01c 100644
+--- a/config/locales/client.en.yml
++++ b/config/locales/client.en.yml
+@@ -577,6 +577,7 @@ en:
+       reply: "Reply"
+       cancel: "Cancel"
+       create_topic: "Create Topic"
++      create_selectable: "Create"
+       create_pm: "Create Private Message"
+       title: "Or press Ctrl+Enter"
+ 
+diff --git a/lib/archetype.rb b/lib/archetype.rb
+index 66acca4..b8d6a33 100644
+--- a/lib/archetype.rb
++++ b/lib/archetype.rb
+@@ -71,7 +71,7 @@ class Archetype
+   end
+ 
+   # By default we have a regular archetype
+-  register 'regular', capabilities: [:searchable, :shown_publicly, :linkable]
++  register 'regular', capabilities: [:searchable, :shown_publicly, :linkable, :creatible]
+   register 'banner', capabilities: [:shown_publicly]
+ 
+ end
+-- 
+1.8.3.4 (Apple Git-47)
+
