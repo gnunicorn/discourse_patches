@@ -1,0 +1,25 @@
+From 7f45b1b47f04b22d599d81c5610e86a1b29c7585 Mon Sep 17 00:00:00 2001
+From: Piioo <Piotr.Szal@googlemail.com>
+Date: Wed, 25 Jun 2014 15:23:45 +0200
+Subject: [PATCH] can create topic only on subcategories
+
+---
+ app/assets/javascripts/discourse/views/category-chooser.js.es6 | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/app/assets/javascripts/discourse/views/category-chooser.js.es6 b/app/assets/javascripts/discourse/views/category-chooser.js.es6
+index 6d22432..e073c12 100644
+--- a/app/assets/javascripts/discourse/views/category-chooser.js.es6
++++ b/app/assets/javascripts/discourse/views/category-chooser.js.es6
+@@ -16,7 +16,7 @@ export default ComboboxView.extend({
+ 
+   content: Em.computed.filter('categories', function(c) {
+     var uncategorized_id = Discourse.Site.currentProp("uncategorized_category_id");
+-    return c.get('permission') === Discourse.PermissionType.FULL && c.get('id') !== uncategorized_id;
++    return c.get('permission') === Discourse.PermissionType.FULL && c.get('id') !== uncategorized_id && typeof c.get("parent_category_id") != "undefined";
+   }),
+ 
+   init: function() {
+-- 
+1.8.5.2 (Apple Git-48)
+
