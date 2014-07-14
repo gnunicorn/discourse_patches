@@ -1,4 +1,4 @@
-From d84f0df1448c6b77bf9797f5925c4f4ef9e34de2 Mon Sep 17 00:00:00 2001
+From f771529548bae2590ac1856166ef7e562405f490 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Wed, 14 May 2014 20:48:32 +0200
 Subject: [PATCH] add support for customizable urls with filler
@@ -39,11 +39,11 @@ index 7a309f3..196bfb7 100644
    urlForPostNumber: function(postNumber) {
      var url = this.get('url');
 diff --git a/app/assets/javascripts/discourse/routes/application_routes.js b/app/assets/javascripts/discourse/routes/application_routes.js
-index 813528d..95edd9a 100644
+index 05eb769..a3f93bd 100644
 --- a/app/assets/javascripts/discourse/routes/application_routes.js
 +++ b/app/assets/javascripts/discourse/routes/application_routes.js
-@@ -14,7 +14,7 @@ Discourse.Route.buildRoutes(function() {
-   });
+@@ -17,7 +17,7 @@ Discourse.Route.buildRoutes(function() {
+   this.route('exception', { path: '/exception' });
  
    // Topic routes
 -  this.resource('topic', { path: '/t/:slug/:id' }, function() {
@@ -52,10 +52,10 @@ index 813528d..95edd9a 100644
      this.route('fromParamsNear', { path: '/:nearPost' });
    });
 diff --git a/config/routes.rb b/config/routes.rb
-index e3278f4..29805de 100644
+index 636e05d..801f99c 100644
 --- a/config/routes.rb
 +++ b/config/routes.rb
-@@ -331,11 +331,9 @@ Discourse::Application.routes.draw do
+@@ -335,11 +335,9 @@ Discourse::Application.routes.draw do
    get "t/:topic_id/wordpress" => "topics#wordpress", constraints: {topic_id: /\d+/}
    get "t/:slug/:topic_id/summary" => "topics#show", defaults: {summary: true}, constraints: {topic_id: /\d+/, post_number: /\d+/}
    get "t/:topic_id/summary" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
@@ -69,7 +69,7 @@ index e3278f4..29805de 100644
    put "t/:topic_id/clear-pin" => "topics#clear_pin", constraints: {topic_id: /\d+/}
    put "t/:topic_id/re-pin" => "topics#re_pin", constraints: {topic_id: /\d+/}
    put "t/:topic_id/mute" => "topics#mute", constraints: {topic_id: /\d+/}
-@@ -348,10 +346,12 @@ Discourse::Application.routes.draw do
+@@ -352,10 +350,12 @@ Discourse::Application.routes.draw do
    get "t/:topic_id/:post_number" => "topics#show", constraints: {topic_id: /\d+/, post_number: /\d+/}
    get "t/:topic_id/last" => "topics#show", post_number: 99999999, constraints: {topic_id: /\d+/}
    get "t/:slug/:topic_id.rss" => "topics#feed", format: :rss, constraints: {topic_id: /\d+/}
@@ -87,10 +87,10 @@ index e3278f4..29805de 100644
    post "t/:topic_id/invite" => "topics#invite", constraints: {topic_id: /\d+/}
    post "t/:topic_id/move-posts" => "topics#move_posts", constraints: {topic_id: /\d+/}
 diff --git a/config/site_settings.yml b/config/site_settings.yml
-index b203a83..2a58450 100644
+index 9327555..6b894b8 100644
 --- a/config/site_settings.yml
 +++ b/config/site_settings.yml
-@@ -602,6 +602,11 @@ uncategorized:
+@@ -664,6 +664,11 @@ uncategorized:
    sequential_replies_threshold: 2
    dominating_topic_minimum_percent: 20
  

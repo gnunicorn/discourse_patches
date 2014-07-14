@@ -1,4 +1,4 @@
-From 2cf0613893725474790f7eb773b4d4aa0107bf7d Mon Sep 17 00:00:00 2001
+From ad6a4f7a31789ab468af7582a07db7cbdadc9438 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Thu, 26 Jun 2014 15:29:02 +0200
 Subject: [PATCH 6/6] allow archetype choosing in composer
@@ -59,7 +59,7 @@ index c39b58a..00bc677 100644
    toggle: function() {
      this.closeAutocomplete();
 diff --git a/app/assets/javascripts/discourse/templates/composer.js.handlebars b/app/assets/javascripts/discourse/templates/composer.js.handlebars
-index 7463c2e..7a153c7 100644
+index 66a0dd3..19b41c8 100644
 --- a/app/assets/javascripts/discourse/templates/composer.js.handlebars
 +++ b/app/assets/javascripts/discourse/templates/composer.js.handlebars
 @@ -12,7 +12,25 @@
@@ -90,10 +90,10 @@ index 7463c2e..7a153c7 100644
              {{#if showEditReason}}
                <div class="edit-reason-input">
 diff --git a/config/locales/client.en.yml b/config/locales/client.en.yml
-index 76693c3..960d01c 100644
+index 218c409..807891d 100644
 --- a/config/locales/client.en.yml
 +++ b/config/locales/client.en.yml
-@@ -577,6 +577,7 @@ en:
+@@ -600,6 +600,7 @@ en:
        reply: "Reply"
        cancel: "Cancel"
        create_topic: "Create Topic"

@@ -1,4 +1,4 @@
-From 69e5ba35890425f72f5531e894168fe01f373930 Mon Sep 17 00:00:00 2001
+From 1a950e7107d5bed2d410b27cc87a998db8808818 Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Fri, 16 May 2014 15:45:17 +0200
 Subject: [PATCH 2/6] load slug for archetype from settings
