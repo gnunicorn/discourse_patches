@@ -1,14 +1,15 @@
-From ad6a4f7a31789ab468af7582a07db7cbdadc9438 Mon Sep 17 00:00:00 2001
+From f5c8aa18899bf04bd7908d74620b43ad2a1914cf Mon Sep 17 00:00:00 2001
 From: Benjamin Kampmann <ben.kampmann@gmail.com>
 Date: Thu, 26 Jun 2014 15:29:02 +0200
 Subject: [PATCH 6/6] allow archetype choosing in composer
 
 ---
  .../discourse/controllers/composer.js.es6          | 23 ++++++++++++++++++++++
+ .../initializers/dynamic-route-builders.js.es6     |  2 +-
  .../discourse/templates/composer.js.handlebars     | 20 ++++++++++++++++++-
  config/locales/client.en.yml                       |  1 +
  lib/archetype.rb                                   |  2 +-
- 4 files changed, 44 insertions(+), 2 deletions(-)
+ 5 files changed, 45 insertions(+), 3 deletions(-)
 
 diff --git a/app/assets/javascripts/discourse/controllers/composer.js.es6 b/app/assets/javascripts/discourse/controllers/composer.js.es6
 index c39b58a..00bc677 100644
@@ -58,6 +59,16 @@ index c39b58a..00bc677 100644
  
    toggle: function() {
      this.closeAutocomplete();
+diff --git a/app/assets/javascripts/discourse/initializers/dynamic-route-builders.js.es6 b/app/assets/javascripts/discourse/initializers/dynamic-route-builders.js.es6
+index 973f9e2..634815d 100644
+--- a/app/assets/javascripts/discourse/initializers/dynamic-route-builders.js.es6
++++ b/app/assets/javascripts/discourse/initializers/dynamic-route-builders.js.es6
+@@ -1,4 +1,4 @@
+-\import buildCategoryRoute from 'discourse/routes/build-category-route';
++import buildCategoryRoute from 'discourse/routes/build-category-route';
+ import buildTopicRoute from 'discourse/routes/build-topic-route';
+ 
+ export default {
 diff --git a/app/assets/javascripts/discourse/templates/composer.js.handlebars b/app/assets/javascripts/discourse/templates/composer.js.handlebars
 index 66a0dd3..19b41c8 100644
 --- a/app/assets/javascripts/discourse/templates/composer.js.handlebars
